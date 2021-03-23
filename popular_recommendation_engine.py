@@ -15,11 +15,13 @@ def pop_product_recommendation():
 	'''
 
 	cur.execute("SELECT * FROM popular_product")
-	pop_products = cur.fetchall()
+	productlist = cur.fetchall()
 
-	random_products = []# will contain 4 random products from the list "pop_products"
+	popular_products = []# will contain 4 random products from the list "pop_products"
 	
-	for i in range (0,4): # picks 4 random products and appends them to a list
-		random_choice = random.choice(pop_products) 
-		random_products.append(random_choice[0]) 
-	return(random_products)
+	random.shuffle(productlist)
+	for product in productlist[:4]:
+		popular_products.append(product[0]) 
+	return(popular_products)
+
+
