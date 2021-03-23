@@ -23,16 +23,24 @@ def popu_prod():
 	'''
 	Pseudocode:
 	Make table in PostgreSQL named 'Populairste_prod', if table doesn't exist already.
+
 	Make dict 'popu_dict'.
 	Loop through all sessions
 	Loop through all orders per session
 	Check if product in order, already exists in dict.
 	If product doesn't yet exist, add key to dict.
 	If product DOES exist, +1 to key value.
-	Once looping is done, order the list from highest to lowest value.
+	Once looping is done, order the dict from highest to lowest key.value.
+	Insert dict into PostgreSQL.
 
+
+	Populairste_prod containts the following:
+	Primary key  RANK, which will be auto incrementing, meaning we don't have to insert rank.
+	productid, this will be the ID of the product.
+	count, this will be the amount of times a product was found in 'orders'. ( This does not have any significance for any recommendations being made in the future. )
 	'''
 
+	cur.execute("CREATE TABLE IF NOT EXISTS Populairste_prod (Rank SERIAL,productid varchar(255) NOT NULL,count int NOT NULL,PRIMARY KEY (Rank));")
 
 
 
