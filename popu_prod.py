@@ -41,6 +41,7 @@ def popu_prod():
 	'''
 
 	cur.execute("CREATE TABLE IF NOT EXISTS Populairste_prod (Rank SERIAL,productid varchar(255) NOT NULL,count int NOT NULL,PRIMARY KEY (Rank));")
+	popu_dict = {}
 
 
 
