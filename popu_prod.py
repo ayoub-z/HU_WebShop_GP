@@ -68,7 +68,7 @@ def popu_prod():
 	#Reverse sort the dict, meaning value will go from high to low.
 	popu_dict =  sorted(popu_dict.items(), key=lambda x: x[1], reverse=True)
 
-	print(type(popu_dict))
+	#insert data into postgreSQL
 	for product in popu_dict:
 		inserttuple =  (product[0],product[1])
 		cur.execute("INSERT INTO populairste_prod ( productid, count) VALUES ( %s, %s )",inserttuple)
