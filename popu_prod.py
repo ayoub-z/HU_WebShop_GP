@@ -58,9 +58,9 @@ def popu_prod():
 				for product in session['order']['products']:
 					for key, value in product.items():
 						if value in popu_dict:
-							popu_dict[value] += 1
+							popu_dict[str(value)] += 1
 						elif value not in popu_dict:
-							popu_dict[value] = 1
+							popu_dict[str(value)] = 1
 		except KeyError:
 			keyerror +=1
 	print(f' Amount of keyerrors: {keyerror}')
@@ -68,14 +68,11 @@ def popu_prod():
 	#Reverse sort the dict, meaning value will go from high to low.
 	popu_dict =  sorted(popu_dict.items(), key=lambda x: x[1], reverse=True)
 
-	print(popu_dict)
-
+	print(type(popu_dict))
+	for product in popu_dict:
+		inserttuple =  (product[0],product[1])
+		cur.execute("INSERT INTO populairste_prod ( productid, count) VALUES ( %s, %s )",inserttuple)
 
 
 popu_prod()
 con.commit()
-
-'''					
-						
-						
-						'''
