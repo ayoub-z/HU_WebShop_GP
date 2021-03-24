@@ -17,25 +17,26 @@ class Recom(Resource):
 
     def get(self, profileid, count, type='default'):
         """ This function represents the handler for GET requests coming in
-        through the API. It currently returns a random sample of products. """
-        print(type, file=sys.stderr)
+        through the API.
+        Specifying type allows us to do different queries depending on the recommendation needed
+        Currently only popular product is implemented."""
+
         if type == 'popular':
             cur.execute("SELECT productid FROM populairste_prod WHERE rank < 200 ORDER BY random() LIMIT 4")
             productlist = cur.fetchall()
             prodids = [productlist[i][0] for i in range(0, 4)]
-            print(f'returning productids: {prodids}', file=sys.stderr)
             return prodids, 200
         if type == 'default':
             cur.execute("SELECT productid FROM populairste_prod WHERE rank < 5 ORDER BY random() LIMIT 4")
             productlist = cur.fetchall()
             prodids = [productlist[i][0] for i in range(0, 4)]
-            print(f'returning productids: {prodids}', file=sys.stderr)
+            print(f'Type not specified, using DEFAULT', file=sys.stderr)
             return prodids, 200
         else:
             cur.execute("SELECT productid FROM populairste_prod WHERE rank < 5 ORDER BY random() LIMIT 4")
             productlist = cur.fetchall()
             prodids = [productlist[i][0] for i in range(0, 4)]
-            print(f'returning productids: {prodids}', file=sys.stderr)
+            print(f'TYPE NOT IMPLEMENTED, returning productids: {prodids}', file=sys.stderr)
             return prodids, 200
 
 # This method binds the Recom class to the REST API, to parse specifically
