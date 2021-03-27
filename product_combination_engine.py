@@ -10,8 +10,8 @@ cur = con.cursor()
 def shopping_cart_products(product_id):
 	'''
 	Function takes a product_id as input and goes through all shopping carts that contain
-	this product_id and retrieves all other products in shopping cart, besides this product_id.
-	It then returns the 4 products that have been the most commonly found.
+	this product_id. It then retrieves all other product_ids that are also in the same shopping cart
+	besides this product_id. It then returns the 4 products_ids that have been the most commonly found.
 	'''
 	product_id = str(product_id) # turn product_id into string
 
@@ -32,9 +32,41 @@ def shopping_cart_products(product_id):
 	# sorts dictionary from top to bottom and picks only the top 4 results
 	sorted_dict = sorted(dict_shopping_cart_products.items(), key=lambda x: x[1], reverse=True)[:4]
 	end_result = [] # will contain the top 4 products, without the dictionary values
+	end_result.append(product_id)
 
 	# small loop to put the products in final variable
 	for product in sorted_dict:
 		end_result.append(product[0])
 
 	return(end_result)
+
+def product_combination_filler():
+	'''
+	Function creates and fills table "product_combination"
+
+	'''
+	
+	cur.execute("CREATE TABLE IF NOT EXISTS product_combination (product_id VARCHAR (40), combi_product_1 varchar(255), combi_product_2 varchar(255), \
+			combi_product_3 varchar(255), combi_product_4 varchar(255), PRIMARY KEY (product_id));")
+
+	cur.execute("SELECT _id FROM product")
+	all_products = cur.fetchall()
+
+	cur.execute("select count(*) from product")
+	product_amount = list(cur)
+
+	insert_count = 0
+	for product in all_products:
+		if len(shopping_cart_products(product[0])) == 5:
+			cur.execute("INSERT INTO product_combination (product_id, combi_product_1, combi_product_2, combi_product_3, combi_product_4) VALUES (%s, %s, %s, %s, %s)", shopping_cart_products(product[0]))
+		insert_count += 1
+		print(f"Inserted: {insert_count} out of {product_amount[0][0]}")
+
+
+product_combination_filler()
+
+con.commit()
+
+cur.close()
+con.close()
+
