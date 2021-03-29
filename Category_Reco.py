@@ -13,8 +13,10 @@ cur = con.cursor()
 def get_matching_prod():
     '''Function that receives information from Webshop
     This information contains  'Category' ,  and ' Sub-category ' when available.
-    If there is a sub-category, get top 4 popular products with that  sub-category
-    If there is no sub-category, but there is a category, get top 4 popular products with that category
+    If there is a sub-category, return  4 popular products with that  sub-category
+    If there is 10 or less products with matching sub-category, try using category instead
+    If there is no sub-category, but there is a category, return  4 popular products with that category
+    If there is 10 or less products with matching category, go to fall_back()
     If there is no sub-category, and no category, fall back to fall_back()
     '''
     # temp vars used while front-end connection is not fully set up yet
@@ -22,11 +24,19 @@ def get_matching_prod():
     category = []
     # variable list that gets filled with recommendable products
     matching_products = []
+
+    # SETUP BACK PLAN FOR WHEN LENTGTH MATCHING PROD < 10
+
     if sub_category != None:
-        matching_products = cur.execute("select  product._id from product inner join populairste_prod on product._id = populairste_prod.productid where sub_category = '%s' LIMIT 5;",sub_category)
-        return matching_products
-    elif category != None:
-        matching_products = cur.execute("select  product._id from product inner join populairste_prod on product._id = populairste_prod.productid where category = '%s' LIMIT 5;",category)
+        matching_products = cur.execute("select  product._id from product inner join populairste_prod on product._id = populairste_prod.productid where sub_category = '%s';",sub_category)
+        if len(matching_products) > 10:
+            matching_products = cur.execute("select  product._id from product inner join populairste_prod on product._id = populairste_prod.productid where sub_category = '%s' LIMIT 4 ;",sub_category)
+            return matching_products
+    if category != None:
+        matching_products = cur.execute("select  product._id from product inner join populairste_prod on product._id = populairste_prod.productid where category = '%s';",category)
+        if len(matching_products) > 10:
+            matching_products = cur.execute("select  product._id from product inner join populairste_prod on product._id = populairste_prod.productid where category = '%s' LIMIT 4;",category)
+            return matching_products
     else:
         fall_back()
 
@@ -34,4 +44,8 @@ def get_matching_prod():
 def fall_back():
     '''This function gets called from get_matchin_prod
     This function only gets called when there is no category or sub-category to work with
-    As the name suggests , This is a fallback function'''
+    As the name suggests , This is a fallback function
+    This function will show 4 recommendations
+    These 4 recommendations are selected from the top 1500 products
+    These top 1500 products have atleast 100 sales, which we deem is enough to base a recommendations on'''
+
