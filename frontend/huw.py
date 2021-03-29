@@ -268,7 +268,7 @@ class HUWebshop(object):
             'pend': skipindex + session['items_per_page'] if session['items_per_page'] > 0 else prodcount, \
             'prevpage': pagepath+str(page-1) if (page > 1) else False, \
             'nextpage': pagepath+str(page+1) if (session['items_per_page']*page < prodcount) else False, \
-            'r_products':self.recommendations(4, list(self.recommendationtypes.keys())[0], category=cat1, sub_category=cat2), \
+            'r_products':self.recommendations(4, list(self.recommendationtypes.keys())[3], category=cat1, sub_category=cat2), \
             'r_type':list(self.recommendationtypes.keys())[3],\
             'r_string':list(self.recommendationtypes.values())[3]\
             })

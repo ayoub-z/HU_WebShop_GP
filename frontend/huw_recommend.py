@@ -22,7 +22,7 @@ class Recom(Resource):
         Currently only popular product is implemented."""
         #debug print statement, remove from final, sys.stderr prints it to command prompt when executing .sh
         print(f'profileid: {profileid}, count: {count}, type: {type}, category:{category}, sub_category: {sub_category}, lastcartproductid={lastcartproductid}', file=sys.stderr)
-        if type == 'popular':
+        if type == 'pop_cat':
             cur.execute("SELECT productid FROM populairste_prod WHERE rank < 200 ORDER BY random() LIMIT 4")
             productlist = cur.fetchall()
             prodids = [productlist[i][0] for i in range(0, 4)]
