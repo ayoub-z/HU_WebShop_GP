@@ -41,4 +41,4 @@ class Recom(Resource):
 
 # This method binds the Recom class to the REST API, to parse specifically
 # requests in the format described below.
-api.add_resource(Recom, "/<string:profileid>/<int:count>/<string:type>/")
+api.add_resource(Recom, "/<string:profileid>/<int:count>/<string:type>/<string:category/<string:sub_category>/<string:cartproductid>/")
