@@ -48,4 +48,5 @@ def fall_back():
     This function will show 4 recommendations
     These 4 recommendations are selected from the top 1500 products
     These top 1500 products have atleast 100 sales, which we deem is enough to base a recommendations on'''
-
+    matching_products = cur.execute("SELECT productid FROM populairste_prod WHERE rank < 1500 ORDER BY random() LIMIT 4")
+    return matching_products
