@@ -7,10 +7,7 @@ con = psycopg2.connect('host=localhost dbname=hu_webshop user=postgres password=
 #cursor
 cur = con.cursor()
 
-
-
-
-def get_matching_prod():
+def get_matching_prod(category,sub_category):
     '''Function that receives information from Webshop
     This information contains  'Category' ,  and ' Sub-category ' when available.
     If there is a sub-category, return  4 popular products with that  sub-category
@@ -28,14 +25,18 @@ def get_matching_prod():
     # SETUP BACK PLAN FOR WHEN LENTGTH MATCHING PROD < 10
 
     if sub_category != None:
-        matching_products = cur.execute("select  product._id from product inner join populairste_prod on product._id = populairste_prod.productid where sub_category = '%s';",sub_category)
+        cur.execute("select  product._id from product inner join populairste_prod on product._id = populairste_prod.productid where sub_category = '%s';",sub_category)
+        matching_products = cur.fetchall()
         if len(matching_products) > 10:
-            matching_products = cur.execute("select  product._id from product inner join populairste_prod on product._id = populairste_prod.productid where sub_category = '%s' LIMIT 4 ;",sub_category)
+            cur.execute("select  product._id from product inner join populairste_prod on product._id = populairste_prod.productid where sub_category = '%s' LIMIT 4 ;",sub_category)
+            matching_products = cur.fetchall()
             return matching_products
     if category != None:
-        matching_products = cur.execute("select  product._id from product inner join populairste_prod on product._id = populairste_prod.productid where category = '%s';",category)
+        cur.execute("select  product._id from product inner join populairste_prod on product._id = populairste_prod.productid where category = '%s';",category)
+        matching_products = cur.fetchall()
         if len(matching_products) > 10:
-            matching_products = cur.execute("select  product._id from product inner join populairste_prod on product._id = populairste_prod.productid where category = '%s' LIMIT 4;",category)
+            cur.execute("select  product._id from product inner join populairste_prod on product._id = populairste_prod.productid where category = '%s' LIMIT 4;",category)
+            matching_products = cur.fetchall()
             return matching_products
     else:
         fall_back()
@@ -48,5 +49,7 @@ def fall_back():
     This function will show 4 recommendations
     These 4 recommendations are selected from the top 1500 products
     These top 1500 products have atleast 100 sales, which we deem is enough to base a recommendations on'''
-    matching_products = cur.execute("SELECT productid FROM populairste_prod WHERE rank < 1500 ORDER BY random() LIMIT 4")
+    cur.execute("SELECT productid FROM populairste_prod WHERE rank < 1500 ORDER BY random() LIMIT 4")
+    matching_products = cur.fetchall()
     return matching_products
+
