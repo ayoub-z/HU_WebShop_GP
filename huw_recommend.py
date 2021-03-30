@@ -3,13 +3,10 @@ from flask_restful import Api, Resource, reqparse
 import psycopg2
 import sys
 from product_combi import product_combi
+from database_setup.db_connection import cur
 
 app = Flask(__name__)
 api = Api(app)
-
-#connect to the db
-con = psycopg2.connect('host=localhost dbname=huwebshop user=postgres password=Levidov123')
-cur = con.cursor()
 
 class Recom(Resource):
     """ This class represents the REST API that provides the recommendations for
