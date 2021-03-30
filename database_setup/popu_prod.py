@@ -1,17 +1,13 @@
 import MongodbDAO
 import psycopg2
+from db_connection import *
 
-# connect to the db
-con = psycopg2.connect('host=localhost dbname=hu_webshop user=postgres password=123')
 
 # informatie tonen over wat data
 db = MongodbDAO.getMongoDB()
 collectionsNames = db.list_collection_names()
 for collectionName in collectionsNames:
     collection = db.get_collection(collectionName)
-
-# cursor
-cur = con.cursor()
 
 # zoeken
 products = MongodbDAO.getDocuments("products")

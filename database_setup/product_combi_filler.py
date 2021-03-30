@@ -1,12 +1,6 @@
 import psycopg2
 import random
-
-#connect to the db
-con = psycopg2.connect('host=localhost dbname=huwebshop user=postgres password=12345')
-
-#cursor
-cur = con.cursor()
-
+from db_connection import *
 
 
 def shopping_cart_products(product_id):
