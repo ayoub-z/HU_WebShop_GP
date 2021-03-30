@@ -2,6 +2,7 @@ from flask import Flask, request, session, render_template, redirect, url_for, g
 from flask_restful import Api, Resource, reqparse
 import psycopg2
 import sys
+from product_combi import product_combi
 
 app = Flask(__name__)
 api = Api(app)
@@ -33,6 +34,9 @@ class Recom(Resource):
             prodids = [productlist[i][0] for i in range(0, 4)]
             print(f'Type not specified, using DEFAULT', file=sys.stderr)
             return prodids, 200
+        if type == 'combination':
+            # returns 4 products from the database that are a good combination with the given product_id
+            return product_combi(lastcartproductid), 200            
         else:
             cur.execute("SELECT productid FROM populairste_prod WHERE rank < 5 ORDER BY random() LIMIT 4")
             productlist = cur.fetchall()

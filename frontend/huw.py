@@ -290,11 +290,17 @@ class HUWebshop(object):
             product = self.prepproduct(self.database.products.find_one({"_id":str(tup[0])}))
             product["itemcount"] = tup[1]
             i.append(product)
-        lastproduct = session['shopping_cart'][-1][0]
-        return self.renderpackettemplate('shoppingcart.html',{'itemsincart':i,\
-            'r_products':self.recommendations(4, list(self.recommendationtypes.keys())[2], lastcartproductid=lastproduct), \
-            'r_type':list(self.recommendationtypes.keys())[2],\
-            'r_string':list(self.recommendationtypes.values())[2]})
+        if len(session['shopping_cart']) >= 3:
+            lastproduct = session['shopping_cart'][-1][0] 
+            return self.renderpackettemplate('shoppingcart.html',{'itemsincart':i,\
+                'r_products':self.recommendations(4, list(self.recommendationtypes.keys())[2], lastcartproductid=lastproduct), \
+                'r_type':list(self.recommendationtypes.keys())[2],\
+                'r_string':list(self.recommendationtypes.values())[2]})
+        else:
+            return self.renderpackettemplate('shoppingcart.html',{'itemsincart':i,\
+                'r_products':self.recommendations(4, list(self.recommendationtypes.keys())[2]), \
+                'r_type':list(self.recommendationtypes.keys())[2],\
+                'r_string':list(self.recommendationtypes.values())[2]})
 
     def categoryoverview(self):
         """ This subpage shows all top-level categories in its main menu. """
