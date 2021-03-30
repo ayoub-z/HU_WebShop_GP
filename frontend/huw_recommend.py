@@ -33,6 +33,8 @@ class Recom(Resource):
             prodids = [productlist[i][0] for i in range(0, 4)]
             print(f'Type not specified, using DEFAULT', file=sys.stderr)
             return prodids, 200
+        if type == 'similar':
+            return score_based_algorithm(), 200
         else:
             cur.execute("SELECT productid FROM populairste_prod WHERE rank < 5 ORDER BY random() LIMIT 4")
             productlist = cur.fetchall()
