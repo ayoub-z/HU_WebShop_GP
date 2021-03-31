@@ -162,16 +162,17 @@ class HUWebshop(object):
         """ This helper function encodes any category name into a URL-friendly
         string, making sensible and human-readable substitutions. """
         c = c.lower()
-        c = c.replace(" ","-")
-        c = c.replace(",","")
-        c = c.replace("'","")
-        c = c.replace("&","en")
-        c = c.replace("ë","e")
+        c = c.replace(" ","_")
+        c = c.replace(",",".")
+        c = c.replace("'","~")
+        c = c.replace("&","-en-")
+        c = c.replace("ë","-ee-")
         c = c.replace("=","-is-")
         c = c.replace("%","-procent-")
-        c = c.replace("--","-")
+        #c = c.replace("--","-")
         c = urllib.parse.quote(c)
         return c
+
 
     def prepproduct(self,p):
         """ This helper function flattens and rationalizes the values retrieved

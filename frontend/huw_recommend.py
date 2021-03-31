@@ -5,6 +5,7 @@ import sys
 from product_combi import product_combi
 from database_setup.db_connection import cur
 from score_filter import score_based_filter
+from Category_Reco import *
 
 app = Flask(__name__)
 api = Api(app)
@@ -22,10 +23,7 @@ class Recom(Resource):
         #debug print statement, remove from final, sys.stderr prints it to command prompt when executing .sh
         print(f'profileid: {profileid}, count: {count}, type: {type}, category:{category}, sub_category: {sub_category}, lastcartproductid={lastcartproductid}', file=sys.stderr)
         if type == 'pop_cat':
-            cur.execute("SELECT productid FROM populairste_prod WHERE rank < 200 ORDER BY random() LIMIT 4")
-            productlist = cur.fetchall()
-            prodids = [productlist[i][0] for i in range(0, 4)]
-            return prodids, 200
+            return get_matching_prod(category,sub_category), 200
         if type == 'similar':
             return score_based_filter(productid), 200
         if type == 'combination':
