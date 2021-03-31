@@ -32,7 +32,7 @@ def similarity_score(product_id):
         #sub_category
         if product[3] == startproduct[3]:
             similarity_score_dict[product[0]] += 1
-        #sub_category
+        #sub_sub_category
         if product[4] == startproduct[4]:
             similarity_score_dict[product[0]] += 2
     return similarity_score_dict
@@ -77,7 +77,34 @@ def score_combiner(product_id):
 
     #slice the dict with itertools to only get the top 4 results
     results = dict(itertools.islice(sorted_combine_dict.items(), 4))
-    print(results)
-    #add SQL insert here
+    return results
 
-score_combiner("45281")
+def score_table_maker():
+    cur=con.cursor()
+    #making the table and adding foreign key restraint to productid
+    cur.execute("CREATE TABLE score_recommendation (productid varchar(255) NOT NULL, product1 varchar(255) NOT NULL, product2 varchar(255) NOT NULL, product3 varchar(255) NOT NULL, product4 varchar(255) NOT NULL, PRIMARY KEY(productid));")
+    cur.execute("ALTER TABLE score_recommendation ADD CONSTRAINT FKscore_rec1234 FOREIGN KEY (productid) REFERENCES product (_id);")
+    con.commit()
+
+def score_table_filler():
+    '''This function should be run after the table score_recommendation has been created,
+     with the function score_table_maker.
+     This function calls score_combiner to gather the 4 highest scoring products
+     It then inserts the original product along with it's 4 highest scoring recommendations into score_recommendation'''
+    cur = con.cursor()
+    productlist = productfetcher(" ") #run productfetcher with an empty input so we get a list of all products
+
+    # for every product, call score_combiner to find out the best recommendations
+    for i in productlist:
+        results = [*score_combiner(i[0])] #using the * operator we can unpack this dict and get the keys from it
+        try:
+            sqlstatement = "INSERT INTO score_recommendation (productid, product1, product2, product3, product4) VALUES (%s, %s, %s, %s, %s)"
+            valuetuple = (i[0], results[0], results[1], results[2], results[3])
+            print(f"Inserting {i[0]} with recommendations: {results[0],  results[1], results[2], results[3]}")
+            cur.execute(sqlstatement,valuetuple)
+            con.commit()
+        except Exception as e:
+            print(e)
+            con.rollback()
+
+score_table_filler()
