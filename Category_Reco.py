@@ -47,9 +47,9 @@ def get_matching_prod(category,sub_category):
             matching_products = formatting_fix(matching_products)
             return matching_products
         else:
-            fall_back()
+            return fall_back()
     else:
-        fall_back()
+        return fall_back()
 
 def fall_back():
     '''This function gets called from get_matchin_prod
