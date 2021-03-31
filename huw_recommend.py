@@ -6,7 +6,7 @@ from product_combi import product_combi
 from database_setup.db_connection import cur
 
 app = Flask(__name__)
-api = Api(app)
+api = Api(app)git
 
 class Recom(Resource):
     """ This class represents the REST API that provides the recommendations for
