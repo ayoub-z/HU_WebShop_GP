@@ -25,9 +25,10 @@ def similarity_score(product_id):
 
     #this allows us to easily adjust the weight of certain attributes. Higher number = higher weight
     categoryweight = 1
-    priceweight = 0.4
-    sub_categoryweight = 1
-    sub_sub_categoryweight = 2
+    priceweight = 0.5
+    doelgroepweight = 2
+    sub_categoryweight = 2
+    sub_sub_categoryweight = 5
 
     for product in productlist:
         similarity_score_dict[product[0]] = 0.1
@@ -39,11 +40,14 @@ def similarity_score(product_id):
         #price within 20% of start?
         if 120 > (100 * product[2]/startproduct[2]) > 80:
             similarity_score_dict[product[0]] += priceweight
-        #sub_category
+        #doelgroep
         if product[3] == startproduct[3]:
-            similarity_score_dict[product[0]] += sub_categoryweight
+            similarity_score_dict[product[0]] += doelgroepweight
         #sub_sub_category
         if product[4] == startproduct[4]:
+            similarity_score_dict[product[0]] += sub_categoryweight
+        #sub_sub_category
+        if product[5] == startproduct[5]:
             similarity_score_dict[product[0]] += sub_sub_categoryweight
     return similarity_score_dict
 
@@ -60,27 +64,31 @@ def popularity_score():
     buycounter = cur.fetchall()
 
     viewweight = 0.01
-    buyweight = 0.05
+    buyweight = 0.1
 
     for i in viewcounter:
         popularity_score_dict[i[0]] = 0.01
         popularity_score_dict[i[0]] += viewweight * i[1]
     for k in buycounter:
         if k[0] in popularity_score_dict.keys():
-            popularity_score_dict[k[0]] += buyweight * k[1]
+            #cap buys at 500 to remove bias towards top ~130 products
+            if k[1] > 500:
+                popularity_score_dict[k[0]] += buyweight * 500
+            else:
+                popularity_score_dict[k[0]] += buyweight * k[1]
         else:
             popularity_score_dict[k[0]] = 0.01
             popularity_score_dict[k[0]] += buyweight*k[1]
+
     return popularity_score_dict
 
-def score_combiner(product_id):
+def score_combiner(product_id, popdict):
     '''This function combines the scores from similarity_score and popularity_score
     This is also where the calculation happens for the total score.
     It returns the top 4 scoring products in a dictionary.
+    We pass this the popularity dict from popularity_score, as not to call that function on loop
     '''
 
-    #get popularity scores
-    popdict = popularity_score()
     #get similarity scores for given productid
     productdict = similarity_score(product_id)
     #make new dict to store results
@@ -104,7 +112,6 @@ def score_combiner(product_id):
 def score_table_maker():
     '''this function creates the table score_recommendation, which has a productid as primary key
     and 4 productids as attributes. It also creates a foreign key constraint for our MAIN productid'''
-
     cur=con.cursor()
     #making the table and adding foreign key restraint to productid
     cur.execute("CREATE TABLE score_recommendation (productid varchar(255) NOT NULL, product1 varchar(255) NOT NULL, product2 varchar(255) NOT NULL, product3 varchar(255) NOT NULL, product4 varchar(255) NOT NULL, PRIMARY KEY(productid));")
@@ -118,10 +125,10 @@ def score_table_filler():
      It then inserts the original product along with it's 4 highest scoring recommendations into score_recommendation'''
     cur = con.cursor()
     productlist = productfetcher(" ") #run productfetcher with an empty input so we get a list of all products
-
+    popularity_dict = popularity_score()
     # for every product, call score_combiner to find out the best recommendations
     for i in productlist:
-        results = [*score_combiner(i[0])] #using the * operator we can unpack this dict and get the keys from it
+        results = [*score_combiner(i[0], popularity_dict)] #using the * operator we can unpack this dict and get the keys from it
         try:
             sqlstatement = "INSERT INTO score_recommendation (productid, product1, product2, product3, product4) VALUES (%s, %s, %s, %s, %s)"
             valuetuple = (i[0], results[0], results[1], results[2], results[3])
@@ -131,5 +138,6 @@ def score_table_filler():
         except Exception as e:
             print(e)
             con.rollback()
+    cur.close()
 
 score_table_filler()

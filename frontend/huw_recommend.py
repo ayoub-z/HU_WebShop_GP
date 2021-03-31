@@ -15,7 +15,7 @@ class Recom(Resource):
     the webshop. At the moment, the API simply returns a random set of products
     to recommend."""
 
-    def get(self, profileid, count, type='default', category=None, sub_category=None, lastcartproductid=None):
+    def get(self, profileid, count, type='default', productid=None, category=None, sub_category=None, lastcartproductid=None):
         """ This function represents the handler for GET requests coming in
         through the API.
         Specifying type allows us to do different queries depending on the recommendation needed
@@ -34,7 +34,10 @@ class Recom(Resource):
             print(f'Type not specified, using DEFAULT', file=sys.stderr)
             return prodids, 200
         if type == 'similar':
-            cur.execute("SELECT * FROM score_recommendation WHERE productid = %s", (productid,))
+            cur.execute("SELECT product1, product2, product3, product4 FROM score_recommendation WHERE productid = %s", (productid,))
+            productlist = cur.fetchall()
+            prodids = [productlist[0][i] for i in range(0, 4)]
+            return prodids, 200
         else:
             cur.execute("SELECT productid FROM populairste_prod WHERE rank < 5 ORDER BY random() LIMIT 4")
             productlist = cur.fetchall()
@@ -44,4 +47,4 @@ class Recom(Resource):
 
 # This method binds the Recom class to the REST API, to parse specifically
 # requests in the format described below.
-api.add_resource(Recom, "/<string:profileid>/<int:count>/<string:type>/<string:category>/<string:sub_category>/<string:lastcartproductid>/")
+api.add_resource(Recom, "/<string:profileid>/<int:count>/<string:type>/<string:productid>/<string:category>/<string:sub_category>/<string:lastcartproductid>/")
