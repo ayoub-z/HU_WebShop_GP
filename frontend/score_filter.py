@@ -140,4 +140,9 @@ def score_table_filler():
             con.rollback()
     cur.close()
 
-score_table_filler()
+def score_based_filter(productid):
+    cur = con.cursor()
+    cur.execute("SELECT product1, product2, product3, product4 FROM score_recommendation WHERE productid = %s", (productid,))
+    productlist = cur.fetchall()
+    prodids = [productlist[0][i] for i in range(0, 4)]
+    return prodids

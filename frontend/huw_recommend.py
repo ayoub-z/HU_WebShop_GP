@@ -1,7 +1,8 @@
-from flask import Flask, request, session, render_template, redirect, url_for, g
-from flask_restful import Api, Resource, reqparse
+from flask import Flask
+from flask_restful import Api, Resource
 import psycopg2
 import sys
+from score_filter import score_based_filter
 
 app = Flask(__name__)
 api = Api(app)
@@ -34,10 +35,7 @@ class Recom(Resource):
             print(f'Type not specified, using DEFAULT', file=sys.stderr)
             return prodids, 200
         if type == 'similar':
-            cur.execute("SELECT product1, product2, product3, product4 FROM score_recommendation WHERE productid = %s", (productid,))
-            productlist = cur.fetchall()
-            prodids = [productlist[0][i] for i in range(0, 4)]
-            return prodids, 200
+            return score_based_filter(productid), 200
         else:
             cur.execute("SELECT productid FROM populairste_prod WHERE rank < 5 ORDER BY random() LIMIT 4")
             productlist = cur.fetchall()
