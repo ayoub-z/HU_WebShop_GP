@@ -224,13 +224,13 @@ class HUWebshop(object):
 
     """ ..:: Recommendation Functions ::.. """
 
-    def recommendations(self, count, type, category=None, sub_category=None, lastcartproductid=None):
+    def recommendations(self, count, type, productid=None, category=None, sub_category=None, lastcartproductid=None):
         """ This function returns the recommendations from the provided page
         and context, by sending a request to the designated recommendation
         service. At the moment, it only transmits the profile ID and the number
         of expected recommendations; to have more user information in the REST
         request, this function would have to change."""
-        resp = requests.get(self.recseraddress+"/"+session['profile_id']+"/"+str(count)+"/"+str(type)+"/"+str(category)+"/"+str(sub_category)+"/"+str(lastcartproductid)+"/")
+        resp = requests.get(self.recseraddress+"/"+session['profile_id']+"/"+str(count)+"/"+str(type)+"/"+str(productid)+"/"+str(category)+"/"+str(sub_category)+"/"+str(lastcartproductid)+"/")
         if resp.status_code == 200:
             recs = eval(resp.content.decode())
             queryfilter = {"_id": {"$in": recs}}
@@ -279,7 +279,7 @@ class HUWebshop(object):
         product = self.database.products.find_one({"_id":str(productid)})
         return self.renderpackettemplate('productdetail.html', {'product':product,\
             'prepproduct':self.prepproduct(product),\
-            'r_products':self.recommendations(4, list(self.recommendationtypes.keys())[1]), \
+            'r_products':self.recommendations(4, productid=productid, type=list(self.recommendationtypes.keys())[1]), \
             'r_type':list(self.recommendationtypes.keys())[1],\
             'r_string':list(self.recommendationtypes.values())[1]})
 
