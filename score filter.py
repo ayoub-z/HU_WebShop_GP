@@ -5,16 +5,20 @@ import itertools
 con = psycopg2.connect('host=localhost dbname=huwebshop user=postgres password=Levidov123')
 
 def productfetcher(product_id):
+    '''this function fetches all products except the productid in the function arguments'''
     cur = con.cursor()
     cur.execute("SELECT _id, category, selling_price, doelgroep, sub_category, sub_sub_category FROM product WHERE _id != %s", (product_id,))
     return cur.fetchall()
 
 def startproductfetcher(product_id):
+    '''this function fetches one specific product'''
     cur = con.cursor()
     cur.execute("SELECT _id, category, selling_price, doelgroep, sub_category, sub_sub_category FROM product WHERE _id = %s", (product_id,))
     return cur.fetchone()
 
 def similarity_score(product_id):
+    '''this function assigns similarity score based on category, selling price, doelgroep, sub_cat and sub_sub_cat
+    it saves these scores in a dict and returns that dict. Per product, we look at ALL other products and score them'''
     similarity_score_dict = {}
     productlist = productfetcher(product_id)
     startproduct = startproductfetcher(product_id)
@@ -38,6 +42,10 @@ def similarity_score(product_id):
     return similarity_score_dict
 
 def popularity_score():
+    '''in this function we assign popularity score to every product.
+    since a products popularity is not relative to other products like with similarity, we can run this once
+    and then we have every product scored. To score a product, we look at times bought and times viewed
+    We give each a weighting and save the total score in a dict which gets returned at the end'''
     cur = con.cursor()
     popularity_score_dict = {}
     cur.execute("SELECT product_id, COUNT(product_id) FROM viewed_before GROUP BY product_id")
@@ -57,6 +65,11 @@ def popularity_score():
     return popularity_score_dict
 
 def score_combiner(product_id):
+    '''This function combines the scores from similarity_score and popularity_score
+    This is also where the calculation happens for the total score.
+    It returns the top 4 scoring products in a dictionary.
+    '''
+
     #get popularity scores
     popdict = popularity_score()
     #get similarity scores for given productid
@@ -80,6 +93,9 @@ def score_combiner(product_id):
     return results
 
 def score_table_maker():
+    '''this function creates the table score_recommendation, which has a productid as primary key
+    and 4 productids as attributes. It also creates a foreign key constraint for our MAIN productid'''
+
     cur=con.cursor()
     #making the table and adding foreign key restraint to productid
     cur.execute("CREATE TABLE score_recommendation (productid varchar(255) NOT NULL, product1 varchar(255) NOT NULL, product2 varchar(255) NOT NULL, product3 varchar(255) NOT NULL, product4 varchar(255) NOT NULL, PRIMARY KEY(productid));")
