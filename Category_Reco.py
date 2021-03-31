@@ -1,14 +1,6 @@
-
-import psycopg2
-
-#connect to the db
+import psycopg2,sys, urllib
 con = psycopg2.connect('host=localhost dbname=hu_webshop user=postgres password=123')
-
-#cursor
 cur = con.cursor()
-
-sub_category = ''
-category = ''
 
 def get_matching_prod(category,sub_category):
     '''Function that receives information from Webshop
@@ -23,19 +15,32 @@ def get_matching_prod(category,sub_category):
     # variable list that gets filled with recommendable products
     matching_products = []
 
+
+
     if sub_category != None:
-        cur.execute("select  product._id from product inner join populairste_prod on product._id = populairste_prod.productid where sub_category = %s;",(sub_category,))
-        matching_products = cur.fetchall()
+
+        print(f'{encodecategory(sub_category)}',file=sys.stderr)
+        sub_category =  encodecategory(sub_category)
+        try:
+            cur.execute("select  product._id from product inner join populairste_prod on product._id = populairste_prod.productid where sub_category = %s;",(sub_category,))
+            matching_products = cur.fetchall()
+        except Exception as e:
+            print(f'Error when fetching all items with X sub_category{e}', file=sys.stderr)
+            con.rollback()
         if len(matching_products) > 10:
             cur.execute("select  product._id from product inner join populairste_prod on product._id = populairste_prod.productid where sub_category = %s LIMIT 4 ;",(sub_category,))
             matching_products = cur.fetchall()
             matching_products = formatting_fix(matching_products)
             return matching_products
-        else:
-            fall_back()
     if category != None:
-        cur.execute("select  product._id from product inner join populairste_prod on product._id = populairste_prod.productid where category = %s;",(category,))
-        matching_products = cur.fetchall()
+        print(f'{encodecategory(category)}', file=sys.stderr)
+        category = encodecategory(category)
+        try:
+            cur.execute("select  product._id from product inner join populairste_prod on product._id = populairste_prod.productid where category = %s;",(category,))
+            matching_products = cur.fetchall()
+        except Exception as e:
+            print(f'Error when fetching all items with X category{e}', file=sys.stderr)
+            con.rollback()
         if len(matching_products) > 10:
             cur.execute("select  product._id from product inner join populairste_prod on product._id = populairste_prod.productid where category = %s LIMIT 4;",(category,))
             matching_products = cur.fetchall()
@@ -55,6 +60,7 @@ def fall_back():
     These top 1500 products have atleast 100 sales, which we deem is enough to base a recommendations on'''
     cur.execute("SELECT productid FROM populairste_prod WHERE rank < 1500 ORDER BY random() LIMIT 4")
     matching_products = cur.fetchall()
+    matching_products = formatting_fix(matching_products)
     return matching_products
 
 def formatting_fix(matching_products):
@@ -71,5 +77,18 @@ def formatting_fix(matching_products):
     matching_products = nieuwelijst
     return matching_products
 
+def encodecategory(c):
+        """ This helper function encodes any category name into a URL-friendly
+        string, making sensible and human-readable substitutions. """
+        c = c.capitalize()
+        c = c.replace("_"," ")
+        c = c.replace(".",",")
+        c = c.replace("~","'")
+        c = c.replace("zadelkaas","&")
+        c = c.replace("juh","ë")
+        c = c.replace("-is-","=")
+        c = c.replace("-procent-","%")
+        return c
+#print(get_matching_prod('Huishouden','dierverzorging'))
 
-print(get_matching_prod(None,'Lichaamsverzorging'))
+#print(encodecategory('toilet-en-keuken'))
