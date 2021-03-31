@@ -23,8 +23,9 @@ class Recom(Resource):
         Specifying type allows us to do different queries depending on the recommendation needed
         Currently only popular product is implemented."""
         #debug print statement, remove from final, sys.stderr prints it to command prompt when executing .sh
-        print(f'profileid: {profileid}, count: {count}, type: {type}, category:{category}, sub_category: {sub_category}, lastcartproductid={lastcartproductid}', file=sys.stderr)
+        # print(f'profileid: {profileid}, count: {count}, type: {type}, category:{category}, sub_category: {sub_category}, lastcartproductid={lastcartproductid}', file=sys.stderr)
         if type == 'pop_cat':
+            print(f'{get_matching_prod(category,sub_category)} ', file=sys.stderr)
             return get_matching_prod(category,sub_category), 200
         if type == 'default':
             cur.execute("SELECT productid FROM populairste_prod WHERE rank < 5 ORDER BY random() LIMIT 4")
