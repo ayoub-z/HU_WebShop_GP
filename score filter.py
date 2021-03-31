@@ -23,22 +23,28 @@ def similarity_score(product_id):
     productlist = productfetcher(product_id)
     startproduct = startproductfetcher(product_id)
 
+    #this allows us to easily adjust the weight of certain attributes. Higher number = higher weight
+    categoryweight = 1
+    priceweight = 0.4
+    sub_categoryweight = 1
+    sub_sub_categoryweight = 2
+
     for product in productlist:
         similarity_score_dict[product[0]] = 0.1
         #category points
         if product[1] == startproduct[1]:
-            similarity_score_dict[product[0]] += 1
+            similarity_score_dict[product[0]] += categoryweight
         if product[2] == 0:
             print('price is 0')
         #price within 20% of start?
         if 120 > (100 * product[2]/startproduct[2]) > 80:
-            similarity_score_dict[product[0]] += 0.4
+            similarity_score_dict[product[0]] += priceweight
         #sub_category
         if product[3] == startproduct[3]:
-            similarity_score_dict[product[0]] += 1
+            similarity_score_dict[product[0]] += sub_categoryweight
         #sub_sub_category
         if product[4] == startproduct[4]:
-            similarity_score_dict[product[0]] += 2
+            similarity_score_dict[product[0]] += sub_sub_categoryweight
     return similarity_score_dict
 
 def popularity_score():
@@ -53,15 +59,18 @@ def popularity_score():
     cur.execute("SELECT product_id, COUNT(product_id) FROM product_order GROUP BY product_id")
     buycounter = cur.fetchall()
 
+    viewweight = 0.01
+    buyweight = 0.05
+
     for i in viewcounter:
         popularity_score_dict[i[0]] = 0.01
-        popularity_score_dict[i[0]] += 0.01 * i[1]
+        popularity_score_dict[i[0]] += viewweight * i[1]
     for k in buycounter:
         if k[0] in popularity_score_dict.keys():
-            popularity_score_dict[k[0]] += 0.05 * k[1]
+            popularity_score_dict[k[0]] += buyweight * k[1]
         else:
             popularity_score_dict[k[0]] = 0.01
-            popularity_score_dict[k[0]] += 0.05*k[1]
+            popularity_score_dict[k[0]] += buyweight*k[1]
     return popularity_score_dict
 
 def score_combiner(product_id):
