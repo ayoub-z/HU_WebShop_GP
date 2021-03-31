@@ -3,13 +3,11 @@ from flask_restful import Api, Resource
 import psycopg2
 import sys
 from score_filter import score_based_filter
+from product_combi import product_combi
+from database_setup.db_connection import cur
 
 app = Flask(__name__)
 api = Api(app)
-
-#connect to the db
-con = psycopg2.connect('host=localhost dbname=huwebshop user=postgres password=Levidov123')
-cur = con.cursor()
 
 class Recom(Resource):
     """ This class represents the REST API that provides the recommendations for
@@ -36,6 +34,9 @@ class Recom(Resource):
             return prodids, 200
         if type == 'similar':
             return score_based_filter(productid), 200
+        if type == 'combination':
+            # returns 4 products from the database that are a good combination with the given product_id
+            return product_combi(lastcartproductid), 200
         else:
             cur.execute("SELECT productid FROM populairste_prod WHERE rank < 5 ORDER BY random() LIMIT 4")
             productlist = cur.fetchall()
