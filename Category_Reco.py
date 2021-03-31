@@ -67,8 +67,7 @@ def formatting_fix(matching_products):
     '''this function is made to change the formatting of the product ID's given by the cur.execute in get_matching_prod
     The original formatting after performing the execute =   [('x',),('y',),('z',),('w',)]
     We need this to change to: [ 'x', 'y', 'z', 'w' ]
-    We need this to happen because of the way huw_reccommend uses date
-
+    We need this to happen because of the way huw_recommend uses data
     '''
 
     nieuwelijst=[]
