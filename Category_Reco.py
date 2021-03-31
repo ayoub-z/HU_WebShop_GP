@@ -16,10 +16,7 @@ def get_matching_prod(category,sub_category):
     matching_products = []
 
 
-
     if sub_category != None:
-
-        print(f'{encodecategory(sub_category)}',file=sys.stderr)
         sub_category =  encodecategory(sub_category)
         try:
             cur.execute("select  product._id from product inner join populairste_prod on product._id = populairste_prod.productid where sub_category = %s;",(sub_category,))
@@ -33,7 +30,6 @@ def get_matching_prod(category,sub_category):
             matching_products = formatting_fix(matching_products)
             return matching_products
     if category != None:
-        print(f'{encodecategory(category)}', file=sys.stderr)
         category = encodecategory(category)
         try:
             cur.execute("select  product._id from product inner join populairste_prod on product._id = populairste_prod.productid where category = %s;",(category,))
@@ -83,11 +79,8 @@ def encodecategory(c):
         c = c.replace("_"," ")
         c = c.replace(".",",")
         c = c.replace("~","'")
-        c = c.replace("zadelkaas","&")
-        c = c.replace("juh","ë")
+        c = c.replace("-en-","&")
+        c = c.replace("-ee-","ë")
         c = c.replace("-is-","=")
         c = c.replace("-procent-","%")
         return c
-#print(get_matching_prod('Huishouden','dierverzorging'))
-
-#print(encodecategory('toilet-en-keuken'))
