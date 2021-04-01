@@ -28,8 +28,10 @@ class Recom(Resource):
             return score_based_filter(productid), 200
         if type == 'combination':
             # returns 4 products from the database that are a good combination with the given product_id
-            return product_combi(lastcartproductid), 200
-
+            if product_combi(lastcartproductid) == None:
+                pass
+            else:
+                return product_combi(lastcartproductid), 200
         if type == 'popular':
             cur.execute("SELECT productid FROM populairste_prod WHERE rank < 5 ORDER BY random() LIMIT 4")
             productlist = cur.fetchall()
@@ -37,11 +39,8 @@ class Recom(Resource):
             print(f'Type not specified, using DEFAULT', file=sys.stderr)
             return prodids, 200
         else:
-            cur.execute("SELECT productid FROM populairste_prod WHERE rank < 5 ORDER BY random() LIMIT 4")
-            productlist = cur.fetchall()
-            prodids = [productlist[i][0] for i in range(0, 4)]
-            print(f'TYPE NOT IMPLEMENTED, returning productids: {prodids}', file=sys.stderr)
-            return prodids, 200
+            print(f'TYPE NOT IMPLEMENTED, returning empty recommendation', file=sys.stderr)
+            return [], 200
 
 # This method binds the Recom class to the REST API, to parse specifically
 # requests in the format described below.
