@@ -35,7 +35,7 @@ class HUWebshop(object):
 
     productfields = ["name", "price.selling_price", "properties.discount", "images"]
 
-    recommendationtypes = {'popular':"Meest verkochte producten",'similar':"Soortgelijke producten",'combination':'Combineert goed met','pop_cat':'Meest populaire producten in deze categorie','personal':'Persoonlijk aanbevolen'}
+    recommendationtypes = {'popular':"Meest verkochte producten",'similar':"Top producten voor jou",'combination':'Combineert goed met','pop_cat':'Meest populaire producten in deze categorie','personal':'Persoonlijk aanbevolen'}
 
     """ ..:: Initialization and Category Index Functions ::.. """
 
@@ -162,16 +162,17 @@ class HUWebshop(object):
         """ This helper function encodes any category name into a URL-friendly
         string, making sensible and human-readable substitutions. """
         c = c.lower()
-        c = c.replace(" ","-")
-        c = c.replace(",","")
-        c = c.replace("'","")
-        c = c.replace("&","en")
-        c = c.replace("ë","e")
+        c = c.replace(" ","_")
+        c = c.replace(",",".")
+        c = c.replace("'","~")
+        c = c.replace("&","-en-")
+        c = c.replace("ë","-ee-")
         c = c.replace("=","-is-")
         c = c.replace("%","-procent-")
-        c = c.replace("--","-")
+        #c = c.replace("--","-")
         c = urllib.parse.quote(c)
         return c
+
 
     def prepproduct(self,p):
         """ This helper function flattens and rationalizes the values retrieved
@@ -224,13 +225,13 @@ class HUWebshop(object):
 
     """ ..:: Recommendation Functions ::.. """
 
-    def recommendations(self, count, type, category=None, sub_category=None, lastcartproductid=None):
+    def recommendations(self, count, type, productid=None, category=None, sub_category=None, lastcartproductid=None):
         """ This function returns the recommendations from the provided page
         and context, by sending a request to the designated recommendation
         service. At the moment, it only transmits the profile ID and the number
         of expected recommendations; to have more user information in the REST
         request, this function would have to change."""
-        resp = requests.get(self.recseraddress+"/"+session['profile_id']+"/"+str(count)+"/"+str(type)+"/"+str(category)+"/"+str(sub_category)+"/"+str(lastcartproductid)+"/")
+        resp = requests.get(self.recseraddress+"/"+session['profile_id']+"/"+str(count)+"/"+str(type)+"/"+str(productid)+"/"+str(category)+"/"+str(sub_category)+"/"+str(lastcartproductid)+"/")
         if resp.status_code == 200:
             recs = eval(resp.content.decode())
             queryfilter = {"_id": {"$in": recs}}
@@ -279,7 +280,7 @@ class HUWebshop(object):
         product = self.database.products.find_one({"_id":str(productid)})
         return self.renderpackettemplate('productdetail.html', {'product':product,\
             'prepproduct':self.prepproduct(product),\
-            'r_products':self.recommendations(4, list(self.recommendationtypes.keys())[1]), \
+            'r_products':self.recommendations(4, productid=productid, type=list(self.recommendationtypes.keys())[1]), \
             'r_type':list(self.recommendationtypes.keys())[1],\
             'r_string':list(self.recommendationtypes.values())[1]})
 
