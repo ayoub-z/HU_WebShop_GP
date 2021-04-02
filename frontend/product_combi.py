@@ -1,6 +1,7 @@
 import psycopg2
 from database_setup.db_connection import cur
 import sys
+from score_filter import *
 
 def product_combi(lastcartproductid, place):
 	'''
@@ -10,10 +11,11 @@ def product_combi(lastcartproductid, place):
 	lastcartproductid = lastcartproductid.replace(" ","")
 	lastcartproductid = lastcartproductid.strip("[]").split(",")
 	lastcartproductid = lastcartproductid[place]	
+
+	
 	# sql query retrieves all 4 products that are a good combination with this product_id from table "product_combination"
-	cur.execute("SELECT * FROM product_combination WHERE product_ID = %s", (str(lastcartproductid),))
+	cur.execute("SELECT * FROM product_combination WHERE product_ID in (%s)", (similar_products))
 	productlist = cur.fetchall()
-	# print(productlist, file=sys.stderr)
 	# checks that the count of how often the last product is bought is at least 5 or higher
 	try:
 		if productlist[0][5] >= 5:
@@ -38,3 +40,4 @@ def product_combi_engine(lastcartproductid, lengthcart, place):
 				continue
 	else:
 		return None
+

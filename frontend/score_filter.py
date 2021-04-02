@@ -1,8 +1,6 @@
 import psycopg2
 import itertools
-
-# connect to the db
-con = psycopg2.connect('host=localhost dbname=huwebshop user=postgres password=Levidov123')
+from database_setup.db_connection import *
 
 def productfetcher(product_id):
     '''this function fetches all products except the productid in the function arguments'''
