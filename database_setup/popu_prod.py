@@ -35,6 +35,7 @@ def popu_prod():
 
     cur.execute(
         "CREATE TABLE IF NOT EXISTS Populairste_prod (Rank SERIAL,productid varchar(255) NOT NULL,count int NOT NULL,PRIMARY KEY (Rank));")
+    con.commit()
     popu_dict = {}
 
     keyerror = 0
@@ -66,7 +67,8 @@ def popu_prod():
     for product in popu_dict:
         inserttuple = (product[0], product[1])
         cur.execute("INSERT INTO populairste_prod ( productid, count) VALUES ( %s, %s )", inserttuple)
-
+        print('1')
+        con.commit()
 
 popu_prod()
-con.commit()
+

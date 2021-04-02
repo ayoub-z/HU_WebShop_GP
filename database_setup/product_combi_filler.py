@@ -1,5 +1,4 @@
 import psycopg2
-import random
 from db_connection import *
 
 
@@ -52,7 +51,8 @@ def product_combination_filler():
 	# sql query that creates product_combination table
 	cur.execute("CREATE TABLE IF NOT EXISTS product_combination (product_id VARCHAR (40) NOT NULL, combi_product_1 varchar(255) NOT NULL, combi_product_2 varchar(255) NOT NULL, \
 			combi_product_3 varchar(255) NOT NULL, combi_product_4 varchar(255) NOT NULL, lowest_combi_count int4 NOT NULL, PRIMARY KEY (product_id));")
-
+	con.commit()
+	
 	# sql query to receive all product_id's from table product
 	cur.execute("SELECT _id FROM product")
 	all_products = cur.fetchall()
@@ -66,8 +66,9 @@ def product_combination_filler():
 			# "lowest_combi_count" means product that has been bought together with given product_id the lowest amount of times out of top 4 results
 			cur.execute("INSERT INTO product_combination (product_id, combi_product_1, combi_product_2, combi_product_3, combi_product_4, lowest_combi_count) \
 			VALUES (%s, %s, %s, %s, %s, %s)", shopping_cart_products(product[0]))
+			con.commit()
 			insert_count += 1
-			print(f"Inserted: {insert_count} out of 11598")
+			print(f"Inserted: {insert_count} out of 11598", shopping_cart_products(product[0]))
 		else:
 			skip_counter += 1
 			pass
@@ -76,8 +77,4 @@ def product_combination_filler():
 
 product_combination_filler()
 
-con.commit()
-
-cur.close()
-con.close()
 
