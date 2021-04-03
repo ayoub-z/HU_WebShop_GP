@@ -16,20 +16,20 @@ class Recom(Resource):
 	the webshop. At the moment, the API simply returns a random set of products
 	to recommend."""
 
-	def get(self, profileid, count, type='default', productid=None, category=None, sub_category=None, lastcartproductid=None, lengthcart=0):
+	def get(self, profileid, count, type='default', productid=None, category=None, sub_category=None, cartproducts=None, lengthcart=0):
 		""" This function represents the handler for GET requests coming in
 		through the API.
 		Specifying type allows us to do different queries depending on the recommendation needed
 		Currently only popular product is implemented."""
 		#debug print statement, remove from final, sys.stderr prints it to command prompt when executing .sh
-		print(f'profileid: {profileid}, count: {count}, type: {type}, category:{category}, sub_category: {sub_category}, lastcartproductid={lastcartproductid}', file=sys.stderr)
+		print(f'profileid: {profileid}, count: {count}, type: {type}, category:{category}, sub_category: {sub_category}, lastcartproductid={cartproducts}', file=sys.stderr)
 		if type == 'pop_cat':
 			return get_matching_prod(category,sub_category), 200
 		if type == 'similar':
 			return score_based_filter(productid), 200
 		if type == 'combination' and lengthcart > 0:
-			if product_combi_engine(lastcartproductid, lengthcart, -1) != None:
-				return product_combi_engine(lastcartproductid, lengthcart, -1), 200
+			if product_combi_engine(cartproducts, lengthcart, -1) != None:
+				return product_combi_engine(cartproducts, lengthcart, -1), 200
 			else:
 				pass
 		if type == 'popular':
@@ -44,4 +44,4 @@ class Recom(Resource):
 
 # This method binds the Recom class to the REST API, to parse specifically
 # requests in the format described below.
-api.add_resource(Recom, "/<string:profileid>/<int:count>/<string:type>/<string:productid>/<string:category>/<string:sub_category>/<string:lastcartproductid>/<int:lengthcart>/")
+api.add_resource(Recom, "/<string:profileid>/<int:count>/<string:type>/<string:productid>/<string:category>/<string:sub_category>/<string:cartproducts>/<int:lengthcart>/")
