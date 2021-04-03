@@ -295,10 +295,9 @@ class HUWebshop(object):
 		cartproducts = []
 		for product in session['shopping_cart']:
 			cartproducts.append(product[0])
-	# lastproduct = session['shopping_cart'][:][0]
 		if lengthcart > 0:
 			return self.renderpackettemplate('shoppingcart.html',{'itemsincart':i,\
-				'r_products':self.recommendations(4, list(self.recommendationtypes.keys())[2], cartproducts=lastproduct, lengthcart=lengthcart), \
+				'r_products':self.recommendations(4, list(self.recommendationtypes.keys())[2], cartproducts=cartproducts, lengthcart=lengthcart), \
 				'r_type':list(self.recommendationtypes.keys())[2],\
 				'r_string':list(self.recommendationtypes.values())[2]})
 		else:
