@@ -5,7 +5,7 @@ from db_connection import *
 def product_finder_query(product_id):
 	'''
 	Function finds other product_ids in table "product_order" that have been bought together
-	in the same shopping cart as the given product_id
+	in the same shopping carts as the given product_id
 	'''
 
 	#sql query that finds all product_ids in the table "product_order" that are in the same "orderorderid" as the given product_id
@@ -87,12 +87,14 @@ def shopping_cart_products(product_id):
 
 def product_combination_filler():
 	'''
-	Function creates and fills table "product_combination"
+	Function creates and fills table "product_combination" by making use of the 
+	product_combination recommendation.
 	'''
 
 	# sql query that creates product_combination table
-	cur.execute("CREATE TABLE IF NOT EXISTS product_combination (product_id VARCHAR (40) NOT NULL, combi_product1 varchar(255) NOT NULL, combi_product2 varchar(255) NOT NULL, \
-			combi_product3 varchar(255) NOT NULL, combi_product4 varchar(255) NOT NULL, lowest_combi_count int4 NOT NULL, PRIMARY KEY (product_id));")
+	cur.execute("CREATE TABLE IF NOT EXISTS product_combination (product_id VARCHAR (40) NOT NULL, combi_product1 varchar(255) NOT NULL,\
+		 		combi_product2 varchar(255) NOT NULL, combi_product3 varchar(255) NOT NULL, combi_product4 varchar(255) NOT NULL, \
+				lowest_combi_count int4 NOT NULL, PRIMARY KEY (product_id));")
 	con.commit()
 
 	# sql query to receive all product_id's from table product
@@ -106,7 +108,8 @@ def product_combination_filler():
 		if len(shopping_cart_products(product[0])) == 6:
 			# sql insert query to fill database
 			# "lowest_combi_count" stands for the count for the product that has been bought together the least
-			cur.execute("INSERT INTO product_combination (product_id, combi_product1, combi_product2, combi_product3, combi_product4, lowest_combi_count) VALUES (%s, %s, %s, %s, %s, %s)", shopping_cart_products(product[0]))
+			cur.execute("INSERT INTO product_combination (product_id, combi_product1, combi_product2, combi_product3, combi_product4, \
+						lowest_combi_count) VALUES (%s, %s, %s, %s, %s, %s)", shopping_cart_products(product[0]))
 			con.commit()
 			insert_count += 1
 			print(f"Insert: {insert_count}")
