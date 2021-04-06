@@ -5,35 +5,16 @@ from similar_p_finder import *
 
 def product_finder_query(product_id):
 	'''
-	Function finds other product_ids in table "product_order" that have been bought together
-	in the same shopping carts as the given product_id
+	Function finds the top 4 product_ids in table "product_order" that have been bought together
+	with the given product_id in the same shopping cart the most as the given product_id 
 	'''
 
-	#sql query finds all product_ids in the table "product_order" that are in the same "orderorderid" as the given product_id
+	#sql query finds top 4 product_ids in the table "product_order" that have been bought the most with the given product_id
 	cur.execute(
-		"SELECT product_id FROM product_order WHERE orderorderid in (SELECT orderorderid from product_order where product_id = %s)",(str(product_id),))
-	cart_products = cur.fetchall()
-
+		"SELECT product_id,count(*) FROM product_order WHERE orderorderid in (SELECT orderorderid from product_order where product_id = %s)\
+		 GROUP BY product_id ORDER BY COUNT(*) DESC",((product_id),))
+	cart_products = cur.fetchall()[1:5]
 	return(cart_products)
-
-def top_four_products (product_id, shopping_cart_products):
-	'''
-	Function puts products in a dictionary, sorts them and picks the 4 products that have the highest value
-	'''
-
-	dict_shopping_cart_products = {}
-
-	for product in shopping_cart_products:
-		# add product to dictionary if it's not in it already and if product isn't the initial product_id
-		if product[0] not in dict_shopping_cart_products and product[0] != product_id:
-			dict_shopping_cart_products[product[0]] = 1
-		# add +1 to value of this product if it's already in the dictionary
-		if product[0] in dict_shopping_cart_products and product[0]:
-			dict_shopping_cart_products[product[0]] += 1
-
-	sorted_dict = sorted(dict_shopping_cart_products.items(), key=lambda x: x[1], reverse=True)	
-
-	return(sorted_dict)
 
 def shopping_cart_products(product_id):
 	'''
@@ -41,47 +22,35 @@ def shopping_cart_products(product_id):
 	this product_id. It then retrieves all other product_ids that are also in the same shopping cart
 	besides this product_id. It then returns the 4 products_ids that have been the most commonly found.
 	'''
+
+	product_id = str(product_id)
 	
 	# function that returns 4 similar products
 	similar_products = similarity_score(str(product_id))
 
 	# holds all products that have been bought together with this product 
-	cart_products = product_finder_query(similar_products[0])
-	# dictionary, descending from products that have been bought the most with the given product_id, to least
-	top4_products = top_four_products(similar_products[0], cart_products)
+	cart_products = dict(product_finder_query(product_id))
+	cart_products1 = dict(product_finder_query(similar_products[0][0]))
+	cart_products2 = dict(product_finder_query(similar_products[1][0]))
+	cart_products3 = dict(product_finder_query(similar_products[2][0]))
+	cart_products4 = dict(product_finder_query(similar_products[3][0]))
 
-	cart_products1 = product_finder_query(similar_products[1])
-	top4_products1 = top_four_products(similar_products[1], cart_products1)
+	all_cart_products = cart_products | cart_products1 | cart_products2 | cart_products3 | cart_products4
+	sorted_dict_cart_products = sorted(all_cart_products.items(), key=lambda x: x[1], reverse=True)[:4]
 
-	cart_products2 = product_finder_query(similar_products[2])
-	top4_products2 = top_four_products(similar_products[2], cart_products2)
-
-	cart_products3 = product_finder_query(similar_products[3])
-	top4_products3 = top_four_products(similar_products[3], cart_products3)
-
-	cart_products4 = product_finder_query(similar_products[4])
-	top4_products4 = top_four_products(similar_products[4], cart_products4)
-
-	# merging all dictionaries
-	dict_cart_products = dict(top4_products) | dict(top4_products1) | dict(top4_products2) | dict(top4_products3) | dict(top4_products4)
-	# sorting dictionary and picking top 5. Reason it's 5 instead of 4, is since original product_id might also be in the dictionary
-	sorted_dict_cart_products = sorted(dict_cart_products.items(), key=lambda x: x[1], reverse=True)[:5]
+	# print(f"Top 4: {top4_products}")
 	
-	if len(sorted_dict_cart_products) == 5:
+	if len(sorted_dict_cart_products) == 4:
 		end_result = []  # will contain product_id, the top 4 products, and count of lowest value from 4th product
 		end_result.append(product_id)
 
 		# small loop to put the products in final variable
 		for product in sorted_dict_cart_products:
-			if product != product_id:
-				end_result.append(product[0])
-		
-		# trimming away the 5th top product, so now it contains initial product, plus the top 4 products
-		end_result = end_result[:5]
+			end_result.append(product[0])
 
 		# adds count of amount of times the last/lowest product has been bought together 
-		end_result.append(sorted_dict_cart_products[4][1])
-		return(end_result)
+		end_result.append(sorted_dict_cart_products[3][1]) 
+		return(end_result)			
 	else:
 		return ('0')
 
@@ -103,21 +72,22 @@ def product_combination_filler():
 
 	insert_count = 0
 	skip_counter = 0
+	
 	for product in all_products:
+		combination_products = (shopping_cart_products(str(product[0])))
 		# checks if we have enough data and all 6 columns in the database can be filled with this product_id
-		if len(shopping_cart_products(product[0])) == 6:
+		if len(combination_products) == 6:
 			# sql insert query to fill database
 			# "lowest_combi_count" stands for the count for the product that has been bought together the least
 			cur.execute("INSERT INTO product_combination (product_id, combi_product1, combi_product2, combi_product3, combi_product4, \
-						lowest_combi_count) VALUES (%s, %s, %s, %s, %s, %s)", shopping_cart_products(product[0]))
+						lowest_combi_count) VALUES (%s, %s, %s, %s, %s, %s)", combination_products)
 			con.commit()
 			insert_count += 1
-			print(f"Insert: {insert_count}")
 		else:
 			skip_counter += 1
-			pass
-
+		print(f"Try: {insert_count + skip_counter} out of 31263")
 	print(
 		f"{insert_count} inserts \n{skip_counter} products have been skipped because they haven't been bought together with enough other products")
+
 
 product_combination_filler()
