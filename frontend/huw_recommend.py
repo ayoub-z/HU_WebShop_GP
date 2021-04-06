@@ -32,12 +32,6 @@ class Recom(Resource):
                 pass
             else:
                 return product_combi(lastcartproductid), 200
-        if type == 'popular':
-            cur.execute("SELECT productid FROM populairste_prod WHERE rank < 5 ORDER BY random() LIMIT 4")
-            productlist = cur.fetchall()
-            prodids = [productlist[i][0] for i in range(0, 4)]
-            print(f'Type not specified, using DEFAULT', file=sys.stderr)
-            return prodids, 200
         else:
             print(f'TYPE NOT IMPLEMENTED, returning empty recommendation', file=sys.stderr)
             return [], 200
