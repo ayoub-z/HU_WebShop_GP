@@ -45,7 +45,7 @@ def similarity_score(product_id):
 				#sub_sub_category
 				if product[5] == startproduct[5]:
 					similarity_score_dict[product[0]] += sub_sub_categoryweight
-					continue
+				continue
 			else:
 				continue
 		#sub_sub_category
