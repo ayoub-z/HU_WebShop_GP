@@ -30,7 +30,7 @@ def similarity_score(product_id):
 	sub_sub_categoryweight = 5
 
 	for product in productlist:
-		if startproduct[3] == "vrouw" or startproduct[3] == "man":
+		if startproduct[3] == "Vrouwen" or startproduct[3] == "Mannen":
 			if product[3] == startproduct[3]:
 				#sub_sub_category
 				similarity_score_dict[product[0]] = 0.1
