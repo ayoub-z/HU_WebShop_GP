@@ -25,9 +25,9 @@ def similarity_score(product_id):
 	#this allows us to easily adjust the weight of certain attributes. Higher number = higher weight
 	categoryweight = 1
 	priceweight = 0.2
-	doelgroepweight = 5	
-	sub_categoryweight = 2
-	sub_sub_categoryweight = 5
+	doelgroepweight = 1	
+	sub_categoryweight = 1
+	sub_sub_categoryweight = 1
 
 	for product in productlist:
 		if startproduct[3] == "Vrouwen" or startproduct[3] == "Mannen":
@@ -66,4 +66,7 @@ def similarity_score(product_id):
 			similarity_score_dict[product[0]] += sub_sub_categoryweight
 	sorted_score_dict = sorted(similarity_score_dict.items(), key=lambda x: x[1], reverse=True)[:4]
 
-	return sorted_score_dict
+	if sorted_score_dict[3][1] < 2:
+		return[]
+	else:
+		return sorted_score_dict
