@@ -1,6 +1,7 @@
 import psycopg2
 import random
 from db_connection import *
+from similar_p_finder import *
 
 def product_finder_query(product_id):
 	'''
@@ -8,14 +9,14 @@ def product_finder_query(product_id):
 	in the same shopping carts as the given product_id
 	'''
 
-	#sql query that finds all product_ids in the table "product_order" that are in the same "orderorderid" as the given product_id
+	#sql query finds all product_ids in the table "product_order" that are in the same "orderorderid" as the given product_id
 	cur.execute(
 		"SELECT product_id FROM product_order WHERE orderorderid in (SELECT orderorderid from product_order where product_id = %s)",(str(product_id),))
 	cart_products = cur.fetchall()
 
 	return(cart_products)
 
-def products_dict(product_id, shopping_cart_products):
+def top_four_products (product_id, shopping_cart_products):
 	'''
 	Function puts products in a dictionary, sorts them and picks the 4 products that have the highest value
 	'''
@@ -41,29 +42,28 @@ def shopping_cart_products(product_id):
 	besides this product_id. It then returns the 4 products_ids that have been the most commonly found.
 	'''
 	
-	# sql query to find 4 similar products based on score_similary algorithm
-	cur.execute("SELECT * FROM score_recommendation WHERE productid = %s", (str(product_id),))
-	similar_products = cur.fetchall()[0]
+	# function that returns 4 similar products
+	similar_products = similarity_score(str(product_id))
 
 	# holds all products that have been bought together with this product 
 	cart_products = product_finder_query(similar_products[0])
 	# dictionary, descending from products that have been bought the most with the given product_id, to least
-	sorted_dict = products_dict(similar_products[0], cart_products)
+	top4_products = top_four_products(similar_products[0], cart_products)
 
 	cart_products1 = product_finder_query(similar_products[1])
-	sorted_dict1 = products_dict(similar_products[1], cart_products1)
+	top4_products1 = top_four_products(similar_products[1], cart_products1)
 
 	cart_products2 = product_finder_query(similar_products[2])
-	sorted_dict2 = products_dict(similar_products[2], cart_products2)
+	top4_products2 = top_four_products(similar_products[2], cart_products2)
 
 	cart_products3 = product_finder_query(similar_products[3])
-	sorted_dict3 = products_dict(similar_products[3], cart_products3)
+	top4_products3 = top_four_products(similar_products[3], cart_products3)
 
 	cart_products4 = product_finder_query(similar_products[4])
-	sorted_dict4 = products_dict(similar_products[4], cart_products4)
+	top4_products4 = top_four_products(similar_products[4], cart_products4)
 
 	# merging all dictionaries
-	dict_cart_products = dict(sorted_dict) | dict(sorted_dict1) | dict(sorted_dict2) | dict(sorted_dict3) | dict(sorted_dict4)
+	dict_cart_products = dict(top4_products) | dict(top4_products1) | dict(top4_products2) | dict(top4_products3) | dict(top4_products4)
 	# sorting dictionary and picking top 5. Reason it's 5 instead of 4, is since original product_id might also be in the dictionary
 	sorted_dict_cart_products = sorted(dict_cart_products.items(), key=lambda x: x[1], reverse=True)[:5]
 	
