@@ -28,15 +28,21 @@ def shopping_cart_products(product_id):
 	# function that returns 4 similar products
 	similar_products = similarity_score(str(product_id))
 
-	# holds all products that have been bought together with this product 
-	cart_products = dict(product_finder_query(product_id))
-	cart_products1 = dict(product_finder_query(similar_products[0][0]))
-	cart_products2 = dict(product_finder_query(similar_products[1][0]))
-	cart_products3 = dict(product_finder_query(similar_products[2][0]))
-	cart_products4 = dict(product_finder_query(similar_products[3][0]))
+	if len(similar_products) == 4:
+		# holds all products that have been bought together with this product 
+		cart_products = dict(product_finder_query(product_id))
+		cart_products1 = dict(product_finder_query(similar_products[0][0]))
+		cart_products2 = dict(product_finder_query(similar_products[1][0]))
+		cart_products3 = dict(product_finder_query(similar_products[2][0]))
+		cart_products4 = dict(product_finder_query(similar_products[3][0]))
 
-	all_cart_products = cart_products | cart_products1 | cart_products2 | cart_products3 | cart_products4
-	sorted_dict_cart_products = sorted(all_cart_products.items(), key=lambda x: x[1], reverse=True)[:4]
+		# merge dictionaries
+		all_cart_products = cart_products | cart_products1 | cart_products2 | cart_products3 | cart_products4
+		sorted_dict_cart_products = sorted(all_cart_products.items(), key=lambda x: x[1], reverse=True)[:4]
+	else:
+		cart_products = dict(product_finder_query(product_id))
+
+		sorted_dict_cart_products = sorted(cart_products.items(), key=lambda x: x[1], reverse=True)[:4]
 
 	# print(f"Top 4: {top4_products}")
 	
