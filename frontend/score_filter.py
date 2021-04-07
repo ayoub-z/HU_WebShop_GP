@@ -44,10 +44,6 @@ def similarity_score(product_id):
         sub_cat_count_dict[sub_category[0]] = sub_category[1]
     for sub_sub_category in sub_sub_category_counts:
         sub_sub_cat_count_dict[sub_sub_category[0]] = sub_sub_category[1]
-    print(max(cat_count_dict.values()))
-    print(max(sub_cat_count_dict.values()))
-    print(max(sub_sub_cat_count_dict.values()))
-    print(cat_count_dict)
     #this allows us to easily adjust the weight of certain attributes. Higher number = higher weight
     categoryweight = 1
     priceweight = 0.5
@@ -135,9 +131,6 @@ def score_combiner(product_id, popdict):
     productdict = similarity_score(product_id)
     #make new dict to store results
     combine_dict = {}
-    print(productdict)
-    print(popdict)
-    print(max(productdict.values()))
     #for every product in productdict (all available products are in this dict)
     for i in productdict.items():
         if i[0] in popdict.keys():                     #if we also find this product in popdict
@@ -181,7 +174,7 @@ def score_table_filler():
             print(e)
             con.rollback()
     cur.close()
-
+score_table_filler()
 def score_based_filter(productid):
     cur = con.cursor()
     cur.execute("SELECT product1, product2, product3, product4 FROM score_recommendation WHERE productid = %s", (productid,))
