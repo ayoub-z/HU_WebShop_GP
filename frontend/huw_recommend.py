@@ -5,7 +5,7 @@ import sys
 from product_combi import product_combi
 from database_setup.db_connection import cur
 from score_filter import score_based_filter
-from Category_Reco import *
+from category_reco import *
 
 app = Flask(__name__)
 api = Api(app)
