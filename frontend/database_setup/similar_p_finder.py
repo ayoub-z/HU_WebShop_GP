@@ -35,15 +35,15 @@ def similarity_score(product_id):
 				#sub_sub_category
 				similarity_score_dict[product[0]] = 0.1
 				#category points
-				if product[1] == startproduct[1]:
+				if product[1] != None and product[1] == startproduct[1]:
 					similarity_score_dict[product[0]] += categoryweight
 				#price within 20% of start?
 				if 110 > (100 * product[2]/startproduct[2]) > 90:
 					similarity_score_dict[product[0]] += priceweight
-				if product[4] == startproduct[4]:
+				if product[4] != None and product[4] == startproduct[4]:
 					similarity_score_dict[product[0]] += sub_categoryweight
 				#sub_sub_category
-				if product[5] == startproduct[5]:
+				if product[5] != None and product[5] == startproduct[5]:
 					similarity_score_dict[product[0]] += sub_sub_categoryweight
 				continue
 			else:
@@ -51,18 +51,18 @@ def similarity_score(product_id):
 		#sub_sub_category
 		similarity_score_dict[product[0]] = 0.1
 		#category points
-		if product[1] == startproduct[1]:
+		if product[1] != None and product[1] == startproduct[1]:
 			similarity_score_dict[product[0]] += categoryweight
 		#price within 20% of start?
 		if 120 > (100 * product[2]/startproduct[2]) > 80:
 			similarity_score_dict[product[0]] += priceweight
 		#doelgroep
-		if product[3] == startproduct[3]:
+		if product[3] != None and product[3] == startproduct[3]:
 			similarity_score_dict[product[0]] += doelgroepweight
-		if product[4] == startproduct[4]:
+		if product[4] != None and product[4] == startproduct[4]:
 			similarity_score_dict[product[0]] += sub_categoryweight
 		#sub_sub_category
-		if product[5] == startproduct[5]:
+		if product[5] != None and product[5] == startproduct[5]:
 			similarity_score_dict[product[0]] += sub_sub_categoryweight
 	sorted_score_dict = sorted(similarity_score_dict.items(), key=lambda x: x[1], reverse=True)[:4]
 
