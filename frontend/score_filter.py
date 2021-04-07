@@ -35,7 +35,6 @@ def similarity_score(product_id):
     cur.execute("SELECT sub_sub_category, COUNT('sub_sub_category') FROM product WHERE sub_sub_category IS NOT NULL GROUP BY sub_sub_category")
     sub_sub_category_counts = cur.fetchall()
 
-
     cat_count_dict = {}
     sub_cat_count_dict = {}
     sub_sub_cat_count_dict = {}
@@ -45,39 +44,42 @@ def similarity_score(product_id):
         sub_cat_count_dict[sub_category[0]] = sub_category[1]
     for sub_sub_category in sub_sub_category_counts:
         sub_sub_cat_count_dict[sub_sub_category[0]] = sub_sub_category[1]
-
+    print(max(cat_count_dict.values()))
+    print(max(sub_cat_count_dict.values()))
+    print(max(sub_sub_cat_count_dict.values()))
+    print(cat_count_dict)
     #this allows us to easily adjust the weight of certain attributes. Higher number = higher weight
     categoryweight = 1
     priceweight = 0.5
     doelgroepweight = 2
     sub_categoryweight = 2
-    sub_sub_categoryweight = 5
+    sub_sub_categoryweight = 2
 
     for product in productlist:
         #if the startproduct has doelgroep attribute "vrouwen" or "mannen" only score products with that same doelgroep
         if startproduct[3] == "Vrouwen" or startproduct[3] == "Mannen":
             if product[3] == startproduct[3]:
                 #create an entry in the dict
-                similarity_score_dict[product[0]] = 0
-                # category points
+                similarity_score_dict[product[0]] = 0.01
+                # category points = 1 + avg size of category/size of current category
                 if product[1] != None and product[1] == startproduct[1]:
-                    similarity_score_dict[product[0]] += categoryweight
+                    similarity_score_dict[product[0]] += categoryweight + ((sum(cat_count_dict.values()) / len(cat_count_dict.values())) / cat_count_dict[product[1]])
                 # price within 20% of start?
                 if 110 > (100 * product[2] / startproduct[2]) > 90:
                     similarity_score_dict[product[0]] += priceweight
-                # sub_category
+                # sub_category points = 2 + avg size of sub_category/size of current category
                 if product[4] != None and product[4] == startproduct[4]:
-                    similarity_score_dict[product[0]] += sub_categoryweight
-                # sub_sub_category
+                    similarity_score_dict[product[0]] += sub_categoryweight + ((sum(sub_cat_count_dict.values()) / len(sub_cat_count_dict.values())) / sub_cat_count_dict[product[4]])
+                # sub_sub_category = 2 + avg size of sub_sub_category/size of current category
                 if product[5] != None and product[5] == startproduct[5]:
-                    similarity_score_dict[product[0]] += sub_sub_categoryweight
+                    similarity_score_dict[product[0]] += sub_sub_categoryweight + ((sum(sub_sub_cat_count_dict.values()) / len(sub_sub_cat_count_dict.values())) / sub_sub_cat_count_dict[product[5]])
             else:
                 continue
         else:
             similarity_score_dict[product[0]] = 0.01
             #category points
             if product[1] != None and product[1] == startproduct[1]:
-                similarity_score_dict[product[0]] += categoryweight
+                similarity_score_dict[product[0]] += categoryweight + ((sum(cat_count_dict.values()) / len(cat_count_dict.values())) / cat_count_dict[product[1]])
             # price within 20% of start?
             if 120 > (100 * product[2] / startproduct[2]) > 80:
                 similarity_score_dict[product[0]] += priceweight
@@ -86,19 +88,17 @@ def similarity_score(product_id):
                 similarity_score_dict[product[0]] += doelgroepweight
             #sub_category
             if product[4] != None and product[4] == startproduct[4]:
-                similarity_score_dict[product[0]] += sub_categoryweight
+                similarity_score_dict[product[0]] += sub_categoryweight + ((sum(sub_cat_count_dict.values()) / len(sub_cat_count_dict.values())) / sub_cat_count_dict[product[4]])
             # sub_sub_category
             if product[5] != None and product[5] == startproduct[5]:
-                similarity_score_dict[product[0]] += sub_sub_categoryweight
+                similarity_score_dict[product[0]] += sub_sub_categoryweight + ((sum(sub_sub_cat_count_dict.values()) / len(sub_sub_cat_count_dict.values())) / sub_sub_cat_count_dict[product[5]])
     return similarity_score_dict
 
-similarity_score('1497')
 def popularity_score():
     '''in this function we assign popularity score to every product.
     since a products popularity is not relative to other products like with similarity, we can run this once
     and then we have every product scored. To score a product, we look at times bought and times viewed
     We give each a weighting and save the total score in a dict which gets returned at the end'''
-    print('popularity score')
     cur = con.cursor()
     popularity_score_dict = {}
     cur.execute("SELECT product_id, COUNT(product_id) FROM viewed_before GROUP BY product_id")
@@ -131,12 +131,13 @@ def score_combiner(product_id, popdict):
     It returns the top 4 scoring products in a dictionary.
     We pass this the popularity dict from popularity_score, as not to call that function on loop
     '''
-    print('score combiner')
     #get similarity scores for given productid
     productdict = similarity_score(product_id)
     #make new dict to store results
     combine_dict = {}
-
+    print(productdict)
+    print(popdict)
+    print(max(productdict.values()))
     #for every product in productdict (all available products are in this dict)
     for i in productdict.items():
         if i[0] in popdict.keys():                     #if we also find this product in popdict
@@ -150,7 +151,6 @@ def score_combiner(product_id, popdict):
     #slice the dict with itertools to only get the top 4 results
     results = dict(itertools.islice(sorted_combine_dict.items(), 4))
     return results
-
 def score_table_maker():
     '''this function creates the table score_recommendation, which has a productid as primary key
     and 4 productids as attributes. It also creates a foreign key constraint for our MAIN productid'''
@@ -181,6 +181,7 @@ def score_table_filler():
             print(e)
             con.rollback()
     cur.close()
+
 def score_based_filter(productid):
     cur = con.cursor()
     cur.execute("SELECT product1, product2, product3, product4 FROM score_recommendation WHERE productid = %s", (productid,))
