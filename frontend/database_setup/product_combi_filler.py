@@ -36,7 +36,10 @@ def products_dict(starter_productid, product_id, shopping_cart_products):
 	return(sorted_dict)
 
 def lift_function(starter_productid, product_id, shopping_cart_products):
-	
+	'''
+	This function replaces the AMOUNT of times a product has been bought together with the main product,
+	with the PERCENTAGE of how often it has been bought with the main product.
+	'''
 	# amount of times product has been bought
 	cur.execute("SELECT COUNT(*) FROM product_order WHERE product_id = %s", (str(product_id),))
 	purchase_amount = cur.fetchone()[0]
@@ -44,8 +47,10 @@ def lift_function(starter_productid, product_id, shopping_cart_products):
 	dict_products = products_dict(starter_productid, product_id, shopping_cart_products)
 	list_products = [str(item) for t in dict_products for item in t]
 
+	# same as Decimal('0.01')
 	TWOPLACES = Decimal(10) ** -2
 
+	# here we round each percentage to 2 decimals
 	for p in range (1, len(list_products)+1, 2):
 		lift_method = 100 / int(purchase_amount) * int(list_products[p])
 		list_products[p] = float(Decimal(lift_method).quantize(TWOPLACES))
@@ -120,7 +125,7 @@ def shopping_cart_products(product_id):
 	else:
 		dict_cart_products = dict(sorted_dict)
 
-	# sorting dictionary and picking top 5. Reason it's 5 instead of 4, is since original product_id might also be in the dictionary
+	# sorting dictionary and picking top 4.
 	sorted_dict_cart_products = sorted(dict_cart_products.items(), key=lambda x: x[1], reverse=True)[:4]
 	if len(sorted_dict_cart_products) == 4:
 		avg_bought_amount = (sorted_dict_cart_products[0][1] + sorted_dict_cart_products[1][1] + sorted_dict_cart_products[2][1] + sorted_dict_cart_products[3][1]) / 4 
@@ -146,7 +151,7 @@ def product_combination_filler():
 	'''
 
 	# sql query that creates product_combination table
-	cur.execute("CREATE TABLE IF NOT EXISTS product_combination_test (product_id VARCHAR (40) NOT NULL, combi_product1 varchar(255) NOT NULL,\
+	cur.execute("CREATE TABLE IF NOT EXISTS product_combination (product_id VARCHAR (40) NOT NULL, combi_product1 varchar(255) NOT NULL,\
 		 		combi_product2 varchar(255) NOT NULL, combi_product3 varchar(255) NOT NULL, combi_product4 varchar(255) NOT NULL, \
 				lowest_combi_count int4 NOT NULL, PRIMARY KEY (product_id));")
 	con.commit()
@@ -163,7 +168,7 @@ def product_combination_filler():
 		if len(combination_products) == 6:
 			# sql insert query to fill database
 			# "lowest_combi_count" stands for the count for the product that has been bought together the least
-			cur.execute("INSERT INTO product_combination_test (product_id, combi_product1, combi_product2, combi_product3, combi_product4, \
+			cur.execute("INSERT INTO product_combination (product_id, combi_product1, combi_product2, combi_product3, combi_product4, \
 						lowest_combi_count) VALUES (%s, %s, %s, %s, %s, %s)", combination_products)
 			con.commit()
 			insert_count += 1
