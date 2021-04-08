@@ -1,8 +1,6 @@
-import psycopg2
-from database_setup.db_connection import cur
 import sys
 
-def product_combi(lastcartproductid):
+def product_combi(lastcartproductid, cur):
 	'''
 	Function returns the best 4 products that combine with the given product_id from shopping cart 
 	'''
@@ -16,6 +14,6 @@ def product_combi(lastcartproductid):
 		if productlist[0][5] >= 5:
 			prodids = productlist[0][1:5]
 			return prodids
-	except Exception as e:
+	except IndexError as e:
 		print(e, file=sys.stderr)
 		return None

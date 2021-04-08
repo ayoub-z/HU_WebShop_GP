@@ -1,6 +1,5 @@
 from flask import Flask, request, session, render_template, redirect, url_for, g
 from flask_restful import Api, Resource, reqparse
-import psycopg2
 import sys
 from product_combi import product_combi
 from database_setup import db_connection
@@ -23,15 +22,15 @@ class Recom(Resource):
         #debug print statement, remove from final, sys.stderr prints it to command prompt when executing .sh
         print(f'profileid: {profileid}, count: {count}, type: {type}, category:{category}, sub_category: {sub_category}, lastcartproductid={lastcartproductid}', file=sys.stderr)
         if type == 'pop_cat':
-            return get_matching_prod(category,sub_category), 200
+            return get_matching_prod(category,sub_category, db_connection.cur, db_connection.con), 200
         if type == 'similar':
             return score_based_filter(productid, db_connection.cur), 200
         if type == 'combination':
             # returns 4 products from the database that are a good combination with the given product_id
-            if product_combi(lastcartproductid) == None:
+            if product_combi(lastcartproductid, db_connection.cur) == None:
                 pass
             else:
-                return product_combi(lastcartproductid), 200
+                return product_combi(lastcartproductid, db_connection.cur), 200
         else:
             print(f'TYPE NOT IMPLEMENTED, returning empty recommendation', file=sys.stderr)
             return [], 200
