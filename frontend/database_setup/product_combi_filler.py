@@ -1,11 +1,6 @@
-import psycopg2
-import random
 from db_connection import *
 
-con = psycopg2.connect('host=localhost dbname=huwebshop user=postgres password=Levidov123')
-cur = con.cursor()
-
-def shopping_cart_products(product_id):
+def shopping_cart_products(product_id, cur):
     '''
     Function takes a product_id as input and goes through all shopping carts that contain
     this product_id. It then retrieves all other product_ids that are also in the same shopping cart
@@ -47,7 +42,7 @@ def shopping_cart_products(product_id):
         return ('0')
 
 
-def product_combination_filler():
+def product_combination_filler(con, cur):
     '''
     Function creates and fills table "product_combination"
     '''
@@ -64,10 +59,10 @@ def product_combination_filler():
     skip_counter = 0
     for product in all_products:
         # checks if there are at least 4 other products bought together with this product
-        if len(shopping_cart_products(product[0])) == 6:
+        if len(shopping_cart_products(product[0], cur)) == 6:
             # sql insert query to fill database
             # "lowest_combi_count" means product that has been bought together with given product_id the lowest amount of times out of top 4 results
-            cur.execute("INSERT INTO product_combination (product_id, combi_product_1, combi_product_2, combi_product_3, combi_product_4, lowest_combi_count) VALUES (%s, %s, %s, %s, %s, %s)", shopping_cart_products(product[0]))
+            cur.execute("INSERT INTO product_combination (product_id, combi_product_1, combi_product_2, combi_product_3, combi_product_4, lowest_combi_count) VALUES (%s, %s, %s, %s, %s, %s)", shopping_cart_products(product[0], cur))
             insert_count += 1
             con.commit()
             print(f"Inserted: {insert_count} out of 11598")
@@ -79,5 +74,5 @@ def product_combination_filler():
         f"{insert_count} inserts \n{skip_counter} products have been skipped because they haven't been bought together with enough other products")
 
 
-product_combination_filler()
+product_combination_filler(con, cur)
 con.close()

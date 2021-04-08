@@ -3,7 +3,7 @@ from flask_restful import Api, Resource, reqparse
 import sys
 from product_combi import product_combi
 from database_setup import db_connection
-from score_filter import score_based_filter
+from score_filter import *
 from category_reco import *
 
 app = Flask(__name__)

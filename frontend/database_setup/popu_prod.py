@@ -1,5 +1,4 @@
 import MongodbDAO
-import psycopg2
 from db_connection import *
 
 
@@ -42,7 +41,6 @@ def popu_prod():
     # Filter MongoDB Sessions to not retreive excess information. Only 'Order' Is relevant in this function.
     sess_filter = {"order": 1}
     sessions_filtered = MongodbDAO.getCollection("sessions").find({}, sess_filter, no_cursor_timeout=True)
-
     # loop through filtered sessions
     for session in sessions_filtered:
         # try & Except to filter out keyerrors ( meaning order doesn't exist in a session )
