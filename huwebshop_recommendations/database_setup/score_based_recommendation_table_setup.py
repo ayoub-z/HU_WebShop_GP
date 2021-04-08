@@ -55,7 +55,7 @@ def similarity_score(product_id, cur):
                 if product[1] != None and product[1] == startproduct[1]:
                     similarity_score_dict[product[0]] += categoryweight + ((sum(cat_count_dict.values()) / len(cat_count_dict.values())) / cat_count_dict[product[1]])
                 # price within 20% of start?
-                if 110 > (100 * product[2] / startproduct[2]) > 90:
+                if 120 > (100 * product[2] / startproduct[2]) > 80:
                     similarity_score_dict[product[0]] += priceweight
                 # sub_category points = 2 + avg size of sub_category/size of current category
                 if product[4] != None and product[4] == startproduct[4]:
