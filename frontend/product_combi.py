@@ -1,9 +1,8 @@
-import psycopg2
 from database_setup.db_connection import cur
 import sys
 from score_filter import *
 
-def product_combi(cartproducts, place):
+def product_combi(cartproducts, place, cur):
 	'''
 	Function returns the best 4 products that combine with the given product_id from shopping cart 
 	'''
@@ -25,17 +24,17 @@ def product_combi(cartproducts, place):
 		print(e, file=sys.stderr)
 		return None
 
-def product_combi_engine(cartproducts, lengthcart, place):
+def product_combi_engine(cartproducts, lengthcart, place, cur):
 	'''
 	This function makes use of the function "product_combi" so that if there isn't a recommendation found for the last product,
 	it tries to find a recommendation for the next product after it in the shoppingcart
 	'''
-	if product_combi(cartproducts, -1) != None:
-		return product_combi(cartproducts, -1)
+	if product_combi(cartproducts, -1, cur) != None:
+		return product_combi(cartproducts, -1, cur)
 	elif lengthcart >= 2:
 		for i in range(2, lengthcart+1):
-			if product_combi(cartproducts, -i) != None:
-				return product_combi(cartproducts, -i)
+			if product_combi(cartproducts, -i, cur) != None:
+				return product_combi(cartproducts, -i, cur)
 			else:
 				continue
 	else:

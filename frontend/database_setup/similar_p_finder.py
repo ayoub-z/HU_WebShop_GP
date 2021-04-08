@@ -2,25 +2,25 @@ import psycopg2
 import itertools
 from db_connection import *
 
-def productfetcher(product_id):
+def productfetcher(product_id, cur):
 	'''this function fetches all products except the productid in the function arguments'''
 	cur = con.cursor()
 	cur.execute("SELECT _id, category, selling_price, doelgroep, sub_category, sub_sub_category FROM product WHERE _id != %s", (product_id,))
 	return cur.fetchall()
 
-def startproductfetcher(product_id):
+def startproductfetcher(product_id, cur):
 	'''this function fetches one specific product'''
 	cur = con.cursor()
 	cur.execute("SELECT _id, category, selling_price, doelgroep, sub_category, sub_sub_category FROM product WHERE _id = %s", (product_id,))
 	return cur.fetchone()
 
-def similarity_score(product_id):
+def similarity_score(product_id, cur):
 	'''this function assigns similarity score based on category, selling price, doelgroep, sub_cat and sub_sub_cat
 	it saves these scores in a dict and returns the top 4 products in that dict. 
 	Per product, we look at ALL other products and score them'''
 	similarity_score_dict = {}
-	productlist = productfetcher(product_id)
-	startproduct = startproductfetcher(product_id)
+	productlist = productfetcher(product_id, cur)
+	startproduct = startproductfetcher(product_id, cur)
 
 	#this allows us to easily adjust the weight of certain attributes. Higher number = higher weight
 	categoryweight = 1

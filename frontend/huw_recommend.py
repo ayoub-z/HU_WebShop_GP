@@ -28,8 +28,8 @@ class Recom(Resource):
 		if type == 'similar':
 			return score_based_filter(productid), 200
 		if type == 'combination' and lengthcart > 0:
-			if product_combi_engine(cartproducts, lengthcart, -1) != None:
-				return product_combi_engine(cartproducts, lengthcart, -1), 200
+			if product_combi_engine(cartproducts, lengthcart, -1, cur) != None:
+				return product_combi_engine(cartproducts, lengthcart, -1, cur), 200
 			else:
 				pass
 		if type == 'popular':

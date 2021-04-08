@@ -1,9 +1,9 @@
-import psycopg2
-import random
 from db_connection import *
 from similar_p_finder import *
 from decimal import *
-def product_finder_query(product_id):
+
+
+def product_finder_query(product_id, cur):
 	'''
 	Function finds other product_ids in table "product_order" that have been bought together
 	in the same shopping carts as the given product_id
@@ -16,7 +16,7 @@ def product_finder_query(product_id):
 
 	return(cart_products)
 
-def products_dict(starter_productid, product_id, shopping_cart_products):
+def products_dict(starter_productid, product_id, shopping_cart_products, cur):
 	'''
 	Function puts products in a dictionary, sorts them and picks the 4 products that have the highest value
 	'''
@@ -35,7 +35,7 @@ def products_dict(starter_productid, product_id, shopping_cart_products):
 
 	return(sorted_dict)
 
-def lift_function(starter_productid, product_id, shopping_cart_products):
+def lift_function(starter_productid, product_id, shopping_cart_products, cur):
 	'''
 	This function replaces the AMOUNT of times a product has been bought together with the main product,
 	with the PERCENTAGE of how often it has been bought with the main product.
@@ -44,7 +44,7 @@ def lift_function(starter_productid, product_id, shopping_cart_products):
 	cur.execute("SELECT COUNT(*) FROM product_order WHERE product_id = %s", (str(product_id),))
 	purchase_amount = cur.fetchone()[0]
 
-	dict_products = products_dict(starter_productid, product_id, shopping_cart_products)
+	dict_products = products_dict(starter_productid, product_id, shopping_cart_products, cur)
 	list_products = [str(item) for t in dict_products for item in t]
 
 	# same as Decimal('0.01')
@@ -61,63 +61,63 @@ def lift_function(starter_productid, product_id, shopping_cart_products):
 		final_products.append(list_products[p:p+2])
 	return final_products
 
-def shopping_cart_products(product_id):
+def shopping_cart_products(product_id, cur):
 	'''
 	Function takes a product_id as input and goes through all shopping carts that contain
 	this product_id. It then retrieves all other product_ids that are also in the same shopping cart
 	besides this product_id. It then returns the 4 products_ids that have been the most commonly found.
 	'''
 	# sql query to find 4 similar products based on score_similary algorithm
-	similar_products = similarity_score(str(product_id))
+	similar_products = similarity_score(str(product_id), cur)
 
 	# holds all products that have been bought together with this product 
-	cart_products = product_finder_query(product_id)
+	cart_products = product_finder_query(product_id, cur)
 	# dictionary, descending from products that have been bought the most with the given product_id, to least
-	sorted_dict = lift_function(product_id, product_id, cart_products)
+	sorted_dict = lift_function(product_id, product_id, cart_products, cur)
 
 	if len(similar_products) == 4:
-		cart_products1 = product_finder_query(similar_products[0][0])
-		sorted_dict1 = lift_function(product_id, similar_products[0][0], cart_products1)
+		cart_products1 = product_finder_query(similar_products[0][0], cur)
+		sorted_dict1 = lift_function(product_id, similar_products[0][0], cart_products1, cur)
 
-		cart_products2 = product_finder_query(similar_products[1][0])
-		sorted_dict2 = lift_function(product_id, similar_products[1][0], cart_products2)
+		cart_products2 = product_finder_query(similar_products[1][0], cur)
+		sorted_dict2 = lift_function(product_id, similar_products[1][0], cart_products2, cur)
 
-		cart_products3 = product_finder_query(similar_products[2][0])
-		sorted_dict3 = lift_function(product_id, similar_products[2][0], cart_products3)
+		cart_products3 = product_finder_query(similar_products[2][0], cur)
+		sorted_dict3 = lift_function(product_id, similar_products[2][0], cart_products3, cur)
 
-		cart_products4 = product_finder_query(similar_products[3][0])
-		sorted_dict4 = lift_function(product_id, similar_products[3][0], cart_products4)
+		cart_products4 = product_finder_query(similar_products[3][0], cur)
+		sorted_dict4 = lift_function(product_id, similar_products[3][0], cart_products4, cur)
 
 		# merging all dictionaries
 		dict_cart_products = dict(sorted_dict) | dict(sorted_dict1) | dict(sorted_dict2) | dict(sorted_dict3) | dict(sorted_dict4)
 
 	elif len(similar_products) == 3:
-		cart_products1 = product_finder_query(similar_products[0][0])
-		sorted_dict1 = lift_function(product_id, similar_products[0][0], cart_products1)
+		cart_products1 = product_finder_query(similar_products[0][0], cur)
+		sorted_dict1 = lift_function(product_id, similar_products[0][0], cart_products1, cur)
 
-		cart_products2 = product_finder_query(similar_products[1][0])
-		sorted_dict2 = lift_function(product_id, similar_products[1][0], cart_products2)
+		cart_products2 = product_finder_query(similar_products[1][0], cur)
+		sorted_dict2 = lift_function(product_id, similar_products[1][0], cart_products2, cur)
 
-		cart_products3 = product_finder_query(similar_products[2][0])
-		sorted_dict3 = lift_function(product_id, similar_products[2][0], cart_products3)
+		cart_products3 = product_finder_query(similar_products[2][0], cur)
+		sorted_dict3 = lift_function(product_id, similar_products[2][0], cart_products3, cur)
 
 		# merging all dictionaries
 		dict_cart_products = dict(sorted_dict) | dict(sorted_dict1) | dict(sorted_dict2) | dict(sorted_dict3) 
 
 
 	elif len(similar_products) == 2:
-		cart_products1 = product_finder_query(similar_products[0][0])
-		sorted_dict1 = lift_function(product_id, similar_products[0][0], cart_products1)
+		cart_products1 = product_finder_query(similar_products[0][0], cur)
+		sorted_dict1 = lift_function(product_id, similar_products[0][0], cart_products1, cur)
 
-		cart_products2 = product_finder_query(similar_products[1][0])
-		sorted_dict2 = lift_function(product_id, similar_products[1][0], cart_products2)
+		cart_products2 = product_finder_query(similar_products[1][0], cur)
+		sorted_dict2 = lift_function(product_id, similar_products[1][0], cart_products2, cur)
 
 		# merging all dictionaries
 		dict_cart_products = dict(sorted_dict) | dict(sorted_dict1) | dict(sorted_dict2) 
 
 	elif len(similar_products) == 1:
-		cart_products1 = product_finder_query(similar_products[0][0])
-		sorted_dict1 = lift_function(product_id, similar_products[0][0], cart_products1)
+		cart_products1 = product_finder_query(similar_products[0][0], cur)
+		sorted_dict1 = lift_function(product_id, similar_products[0][0], cart_products1, cur)
 
 		# merging all dictionaries
 		dict_cart_products = dict(sorted_dict) | dict(sorted_dict1) 
@@ -144,7 +144,7 @@ def shopping_cart_products(product_id):
 	else:
 		return ('0')
 
-def product_combination_filler():
+def product_combination_filler(con, cur):
 	'''
 	Function creates and fills table "product_combination" by making use of the 
 	product_combination recommendation.
@@ -163,7 +163,7 @@ def product_combination_filler():
 	insert_count = 0
 	skip_counter = 0
 	for product in all_products:
-		combination_products = (shopping_cart_products(str(product[0])))
+		combination_products = (shopping_cart_products(str(product[0]), cur))
 		# checks if we have enough data and all 6 columns in the database can be filled with this product_id
 		if len(combination_products) == 6:
 			# sql insert query to fill database
@@ -178,4 +178,4 @@ def product_combination_filler():
 	print(
 		f"{insert_count} inserts \n{skip_counter} products have been skipped because they haven't been bought together with enough other products")
 
-product_combination_filler()
+product_combination_filler(con, cur)
