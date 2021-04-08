@@ -16,6 +16,7 @@ def product_finder_query(product_id, cur):
 def products_dict(starter_productid, product_id, shopping_cart_products, cur):
 	'''Function puts products in a dictionary, sorts them and picks the 4 products that have the highest value'''
 
+	# dictionary containing products with the amount of times they've bought together with the given product_id
 	dict_shopping_cart_products = {}
 
 	for product in shopping_cart_products:
@@ -26,6 +27,7 @@ def products_dict(starter_productid, product_id, shopping_cart_products, cur):
 		if product[0] not in dict_shopping_cart_products and product[0] != product_id and product[0] != starter_productid:
 			dict_shopping_cart_products[product[0]] = 1
 
+	# sorting dictionary and only picking the top 4
 	sorted_dict = sorted(dict_shopping_cart_products.items(), key=lambda x: x[1], reverse=True)[:4]
 
 	return(sorted_dict)
@@ -37,7 +39,9 @@ def lift_function(starter_productid, product_id, shopping_cart_products, cur):
 	cur.execute("SELECT COUNT(*) FROM product_order WHERE product_id = %s", (str(product_id),))
 	purchase_amount = cur.fetchone()[0]
 
+	# retrieves dictionary with top 4 products. It comes in tuples within a list
 	dict_products = products_dict(starter_productid, product_id, shopping_cart_products, cur)
+	# turning them all into list
 	list_products = [str(item) for t in dict_products for item in t]
 
 	# same as Decimal('0.01')
@@ -58,6 +62,7 @@ def shopping_cart_products(product_id, cur):
 	'''Function takes a product_id as input and goes through all shopping carts that contain
 	this product_id. It then retrieves all other product_ids that are also in the same shopping cart
 	besides this product_id. It then returns the 4 products_ids that have been the most commonly found'''
+
 	# sql query to find 4 similar products based on score_similary algorithm
 	similar_products = similarity_score(str(product_id), cur)
 
@@ -66,6 +71,8 @@ def shopping_cart_products(product_id, cur):
 	# dictionary, descending from products that have been bought the most with the given product_id, to least
 	sorted_dict = lift_function(product_id, product_id, cart_products, cur)
 
+	# sometimes only 2, or 3 similar products are retrieved. Putting if statements to check and assign
+	# the proper path to take
 	if len(similar_products) == 4:
 		cart_products1 = product_finder_query(similar_products[0][0], cur)
 		sorted_dict1 = lift_function(product_id, similar_products[0][0], cart_products1, cur)
@@ -118,9 +125,13 @@ def shopping_cart_products(product_id, cur):
 
 	# sorting dictionary and picking top 4.
 	sorted_dict_cart_products = sorted(dict_cart_products.items(), key=lambda x: x[1], reverse=True)[:4]
+
+	
 	if len(sorted_dict_cart_products) == 4:
+		# calculating the avg of how often each product is bought together with given product_id
 		avg_bought_amount = (sorted_dict_cart_products[0][1] + sorted_dict_cart_products[1][1] + sorted_dict_cart_products[2][1] + sorted_dict_cart_products[3][1]) / 4 
 
+	# making sure we have enough products to recommend
 	if len(sorted_dict_cart_products) == 4:
 		end_result = []  # will contain product_id, the top 4 products, and count of lowest value from 4th product
 		end_result.append(product_id)
@@ -133,6 +144,7 @@ def shopping_cart_products(product_id, cur):
 		end_result.append(avg_bought_amount)
 		return(end_result)
 	else:
+		# if we don't have enough products to recommend, we return default '0' so this product_id gets skipped
 		return ('0')
 
 def product_combination_filler(con, cur):
