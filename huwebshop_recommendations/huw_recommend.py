@@ -1,7 +1,7 @@
 from flask import Flask, request, session, render_template, redirect, url_for, g
 from flask_restful import Api, Resource, reqparse
 import sys
-from product_combi import product_combi
+from product_combi import *
 from database_setup import db_connection
 from score_filter import *
 from category_reco import *
@@ -14,23 +14,20 @@ class Recom(Resource):
 	the webshop. At the moment, the API simply returns a random set of products
 	to recommend."""
 
-	def get(self, profileid, count, type='default', productid=None, category=None, sub_category=None, lastcartproductid=None):
+	def get(self, profileid, count, type='default', productid=None, category=None, sub_category=None, cartproducts=None, lengthcart=0):
 		""" This function represents the handler for GET requests coming in
 		through the API.
 		Specifying type allows us to do different queries depending on the recommendation needed
 		Currently only popular product is implemented."""
-		#debug print statement, remove from final, sys.stderr prints it to command prompt when executing .sh
-		print(f'profileid: {profileid}, count: {count}, type: {type}, category:{category}, sub_category: {sub_category}, lastcartproductid={lastcartproductid}', file=sys.stderr)
 		if type == 'pop_cat':
 			return get_matching_prod(category,sub_category, db_connection.cur, db_connection.con), 200
 		if type == 'similar':
 			return score_based_filter(productid, db_connection.cur), 200
-		if type == 'combination':
-			# returns 4 products from the database that are a good combination with the given product_id
-			if product_combi(lastcartproductid, db_connection.cur) == None:
-				pass
+		if type == 'combination' and lengthcart > 0:
+			if product_combi_engine(cartproducts, lengthcart, -1, db_connection.cur) != None:
+				return product_combi_engine(cartproducts, lengthcart, -1, db_connection.cur), 200
 			else:
-				return product_combi(lastcartproductid, db_connection.cur), 200
+				pass
 		else:
 			print(f'TYPE NOT IMPLEMENTED, returning empty recommendation', file=sys.stderr)
 			return [], 200

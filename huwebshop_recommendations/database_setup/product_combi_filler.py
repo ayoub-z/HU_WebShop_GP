@@ -140,7 +140,7 @@ def product_combination_filler(con, cur):
 	product_combination recommendation'''
 
 	# sql query that creates product_combination table
-	cur.execute("CREATE TABLE IF NOT EXISTS product_combination_test1 (product_id VARCHAR (40) NOT NULL, combi_product1 varchar(255) NOT NULL,\
+	cur.execute("CREATE TABLE IF NOT EXISTS product_combination (product_id VARCHAR (40) NOT NULL, combi_product1 varchar(255) NOT NULL,\
 		 		combi_product2 varchar(255) NOT NULL, combi_product3 varchar(255) NOT NULL, combi_product4 varchar(255) NOT NULL, \
 				lowest_combi_count int4 NOT NULL, PRIMARY KEY (product_id));")
 	con.commit()
@@ -154,10 +154,11 @@ def product_combination_filler(con, cur):
 	for product in all_products:
 		combination_products = (shopping_cart_products(str(product[0]), cur))
 		# checks if we have enough data and all 6 columns in the database can be filled with this product_id
+		print(combination_products)
 		if len(combination_products) == 6:
 			# sql insert query to fill database
 			# "lowest_combi_count" stands for the count for the product that has been bought together the least
-			cur.execute("INSERT INTO product_combination_test1 (product_id, combi_product1, combi_product2, combi_product3, combi_product4, \
+			cur.execute("INSERT INTO product_combination (product_id, combi_product1, combi_product2, combi_product3, combi_product4, \
 						lowest_combi_count) VALUES (%s, %s, %s, %s, %s, %s)", combination_products)
 			con.commit()
 			insert_count += 1
