@@ -54,7 +54,7 @@ def similarity_score(product_id):
 		if product[1] != None and product[1] == startproduct[1]:
 			similarity_score_dict[product[0]] += categoryweight
 		#price within 20% of start?
-		if 120 > (100 * product[2]/startproduct[2]) > 80:
+		if 110 > (100 * product[2]/startproduct[2]) > 90:
 			similarity_score_dict[product[0]] += priceweight
 		#doelgroep
 		if product[3] != None and product[3] == startproduct[3]:

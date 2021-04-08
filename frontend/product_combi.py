@@ -14,7 +14,7 @@ def product_combi(cartproducts, place):
 
 	
 	# sql query retrieves all 4 products that are a good combination with this product_id from table "product_combination"
-	cur.execute("SELECT * FROM product_combination WHERE product_ID in %s", (str(cartproduct_id),))
+	cur.execute("SELECT * FROM product_combination WHERE product_ID = %s", (str(cartproduct_id),))
 	productlist = cur.fetchall()
 	# checks that the count of how often the last product is bought is at least 5 or higher
 	try:
