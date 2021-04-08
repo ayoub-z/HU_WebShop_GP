@@ -3,7 +3,7 @@ from flask_restful import Api, Resource, reqparse
 import psycopg2
 import sys
 from product_combi import product_combi
-from database_setup.db_connection import cur
+from database_setup import db_connection
 from score_filter import score_based_filter
 from category_reco import *
 
@@ -25,7 +25,7 @@ class Recom(Resource):
         if type == 'pop_cat':
             return get_matching_prod(category,sub_category), 200
         if type == 'similar':
-            return score_based_filter(productid), 200
+            return score_based_filter(productid, db_connection.cur), 200
         if type == 'combination':
             # returns 4 products from the database that are a good combination with the given product_id
             if product_combi(lastcartproductid) == None:

@@ -1,31 +1,25 @@
 import psycopg2
 import itertools
-import sys
+from database_setup import db_connection
 
-# connect to the db
-con = psycopg2.connect('host=localhost dbname=huwebshop user=postgres password=Levidov123')
-
-def productfetcher(product_id):
+def productfetcher(product_id, cur):
     '''this function fetches all products except the productid in the function arguments'''
-    cur = con.cursor()
     cur.execute("SELECT _id, category, selling_price, doelgroep, sub_category, sub_sub_category FROM product WHERE _id != %s", (product_id,))
     return cur.fetchall()
 
-def startproductfetcher(product_id):
+def startproductfetcher(product_id, cur):
     '''this function fetches one specific product'''
-    cur = con.cursor()
     cur.execute("SELECT _id, category, selling_price, doelgroep, sub_category, sub_sub_category FROM product WHERE _id = %s", (product_id,))
     return cur.fetchone()
 
-def similarity_score(product_id):
+def similarity_score(product_id, cur):
     '''this function assigns similarity score based on category, selling price, doelgroep, sub_cat and sub_sub_cat
     it saves these scores in a dict and returns that dict. Per product, we look at ALL other products and score them
     furthermore, we have specified that if the original products "doelgroep" is "mannen" or "vrouwen"
     we only score products with that same doelgroep attribute, as not to recommend womens products to men and vice versa'''
-    cur=con.cursor()
     similarity_score_dict = {}
-    productlist = productfetcher(product_id)
-    startproduct = startproductfetcher(product_id)
+    productlist = productfetcher(product_id, cur)
+    startproduct = startproductfetcher(product_id, cur)
 
     #retrieve
     cur.execute("SELECT category, COUNT('category') FROM product WHERE category IS NOT NULL GROUP BY category")
@@ -90,12 +84,11 @@ def similarity_score(product_id):
                 similarity_score_dict[product[0]] += sub_sub_categoryweight + ((sum(sub_sub_cat_count_dict.values()) / len(sub_sub_cat_count_dict.values())) / sub_sub_cat_count_dict[product[5]])
     return similarity_score_dict
 
-def popularity_score():
+def popularity_score(cur):
     '''in this function we assign popularity score to every product.
     since a products popularity is not relative to other products like with similarity, we can run this once
     and then we have every product scored. To score a product, we look at times bought and times viewed
     We give each a weighting and save the total score in a dict which gets returned at the end'''
-    cur = con.cursor()
     popularity_score_dict = {}
     cur.execute("SELECT product_id, COUNT(product_id) FROM viewed_before GROUP BY product_id")
     viewcounter = cur.fetchall()
@@ -130,14 +123,14 @@ def popularity_score():
                 popularity_score_dict[k[0]] += buyweight * k[1] #append uncapped score
     return popularity_score_dict
 
-def score_combiner(product_id, popdict):
+def score_combiner(product_id, popdict, cur):
     '''This function combines the scores from similarity_score and popularity_score
     This is also where the calculation happens for the total score.
     It returns the top 4 scoring products in a dictionary.
     We pass this the popularity dict from popularity_score, as not to call that function on loop
     '''
     #get similarity scores for given productid
-    productdict = similarity_score(product_id)
+    productdict = similarity_score(product_id, cur)
     #make new dict to store results
     combine_dict = {}
     #for every product in productdict (all available products are in this dict)
@@ -154,21 +147,19 @@ def score_combiner(product_id, popdict):
     results = dict(itertools.islice(sorted_combine_dict.items(), 4))
     return results
 
-def score_table_maker():
+def score_table_maker(con, cur):
     '''this function creates the table score_recommendation, which has a productid as primary key
     and 4 productids as attributes. It also creates a foreign key constraint for our MAIN productid'''
-    cur=con.cursor()
     #making the table and adding foreign key restraint to productid
     cur.execute("CREATE TABLE score_recommendation (productid varchar(255) NOT NULL, product1 varchar(255) NOT NULL, product2 varchar(255) NOT NULL, product3 varchar(255) NOT NULL, product4 varchar(255) NOT NULL, PRIMARY KEY(productid));")
     cur.execute("ALTER TABLE score_recommendation ADD CONSTRAINT FKscore_rec1234 FOREIGN KEY (productid) REFERENCES product (_id);")
     con.commit()
 
-def score_table_filler():
+def score_table_filler(con, cur):
     '''This function should be run after the table score_recommendation has been created,
      with the function score_table_maker.
      This function calls score_combiner to gather the 4 highest scoring products
      It then inserts the original product along with it's 4 highest scoring recommendations into score_recommendation'''
-    cur = con.cursor()
     productlist = productfetcher(" ") #run productfetcher with an empty input so we get a list of all products
     popularity_dict = popularity_score()
     # for every product, call score_combiner to find out the best recommendations
@@ -180,13 +171,15 @@ def score_table_filler():
             print(f"Inserting {i[0]} with recommendations: {results[0],  results[1], results[2], results[3]}")
             cur.execute(sqlstatement,valuetuple)
             con.commit()
-        except Exception as e:
+        except KeyError as e:
             print(e)
             con.rollback()
+        except InFailedSqlTransaction as e:
+            print(e)
+            con.rollback
     cur.close()
 
-def score_based_filter(productid):
-    cur = con.cursor()
+def score_based_filter(productid, cur):
     cur.execute("SELECT product1, product2, product3, product4 FROM score_recommendation WHERE productid = %s", (productid,))
     productlist = cur.fetchall()
     prodids = [productlist[0][i] for i in range(0, 4)]
