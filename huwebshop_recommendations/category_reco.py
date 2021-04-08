@@ -1,7 +1,6 @@
-from database_setup.db_connection import *
 import sys
 
-def get_matching_prod(category,sub_category):
+def get_matching_prod(category, sub_category, cur, con):
 
     '''Function that receives information from Webshop
     This information contains  'Category' ,  and ' Sub-category ' when available.
@@ -19,9 +18,9 @@ def get_matching_prod(category,sub_category):
     if sub_category != None:
         sub_category =  encodecategory(sub_category)
         try:
-            cur.execute("select  product._id from product inner join populairste_prod on product._id = populairste_prod.productid where sub_category = %s;",(sub_category,))
+            cur.execute("select product._id from product inner join populairste_prod on product._id = populairste_prod.productid where sub_category = %s;",(sub_category,))
             matching_products = cur.fetchall()
-        except Exception as e:
+        except InFailedTransaction as e:
             print(f'Error when fetching all items with X sub_category{e}', file=sys.stderr)
             con.rollback()
         if len(matching_products) > 10:
@@ -43,11 +42,11 @@ def get_matching_prod(category,sub_category):
             matching_products = formatting_fix(matching_products)
             return matching_products
         else:
-            return fall_back()
+            return fall_back(cur)
     else:
-        return fall_back()
+        return fall_back(cur)
 
-def fall_back():
+def fall_back(cur):
     '''This function gets called from get_matchin_prod
     This function only gets called when there is no category or sub-category to work with
     As the name suggests , This is a fallback function

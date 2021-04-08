@@ -2,12 +2,9 @@ from db_connection import *
 from similar_p_finder import *
 from decimal import *
 
-
 def product_finder_query(product_id, cur):
-	'''
-	Function finds other product_ids in table "product_order" that have been bought together
-	in the same shopping carts as the given product_id
-	'''
+	'''Function finds other product_ids in table "product_order" that have been bought together
+	in the same shopping carts as the given product_id'''
 
 	#sql query that finds all product_ids in the table "product_order" that are in the same "orderorderid" as the given product_id
 	cur.execute(
@@ -17,9 +14,7 @@ def product_finder_query(product_id, cur):
 	return(cart_products)
 
 def products_dict(starter_productid, product_id, shopping_cart_products, cur):
-	'''
-	Function puts products in a dictionary, sorts them and picks the 4 products that have the highest value
-	'''
+	'''Function puts products in a dictionary, sorts them and picks the 4 products that have the highest value'''
 
 	dict_shopping_cart_products = {}
 
@@ -36,10 +31,8 @@ def products_dict(starter_productid, product_id, shopping_cart_products, cur):
 	return(sorted_dict)
 
 def lift_function(starter_productid, product_id, shopping_cart_products, cur):
-	'''
-	This function replaces the AMOUNT of times a product has been bought together with the main product,
-	with the PERCENTAGE of how often it has been bought with the main product.
-	'''
+	'''This function replaces the AMOUNT of times a product has been bought together with the main product,
+	with the PERCENTAGE of how often it has been bought with the main product'''
 	# amount of times product has been bought
 	cur.execute("SELECT COUNT(*) FROM product_order WHERE product_id = %s", (str(product_id),))
 	purchase_amount = cur.fetchone()[0]
@@ -62,11 +55,9 @@ def lift_function(starter_productid, product_id, shopping_cart_products, cur):
 	return final_products
 
 def shopping_cart_products(product_id, cur):
-	'''
-	Function takes a product_id as input and goes through all shopping carts that contain
+	'''Function takes a product_id as input and goes through all shopping carts that contain
 	this product_id. It then retrieves all other product_ids that are also in the same shopping cart
-	besides this product_id. It then returns the 4 products_ids that have been the most commonly found.
-	'''
+	besides this product_id. It then returns the 4 products_ids that have been the most commonly found'''
 	# sql query to find 4 similar products based on score_similary algorithm
 	similar_products = similarity_score(str(product_id), cur)
 
@@ -145,13 +136,11 @@ def shopping_cart_products(product_id, cur):
 		return ('0')
 
 def product_combination_filler(con, cur):
-	'''
-	Function creates and fills table "product_combination" by making use of the 
-	product_combination recommendation.
-	'''
+	'''Function creates and fills table "product_combination" by making use of the 
+	product_combination recommendation'''
 
 	# sql query that creates product_combination table
-	cur.execute("CREATE TABLE IF NOT EXISTS product_combination (product_id VARCHAR (40) NOT NULL, combi_product1 varchar(255) NOT NULL,\
+	cur.execute("CREATE TABLE IF NOT EXISTS product_combination_test1 (product_id VARCHAR (40) NOT NULL, combi_product1 varchar(255) NOT NULL,\
 		 		combi_product2 varchar(255) NOT NULL, combi_product3 varchar(255) NOT NULL, combi_product4 varchar(255) NOT NULL, \
 				lowest_combi_count int4 NOT NULL, PRIMARY KEY (product_id));")
 	con.commit()
@@ -168,7 +157,7 @@ def product_combination_filler(con, cur):
 		if len(combination_products) == 6:
 			# sql insert query to fill database
 			# "lowest_combi_count" stands for the count for the product that has been bought together the least
-			cur.execute("INSERT INTO product_combination (product_id, combi_product1, combi_product2, combi_product3, combi_product4, \
+			cur.execute("INSERT INTO product_combination_test1 (product_id, combi_product1, combi_product2, combi_product3, combi_product4, \
 						lowest_combi_count) VALUES (%s, %s, %s, %s, %s, %s)", combination_products)
 			con.commit()
 			insert_count += 1

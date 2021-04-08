@@ -1,11 +1,8 @@
-from database_setup.db_connection import cur
 import sys
 from score_filter import *
 
 def product_combi(cartproducts, place, cur):
-	'''
-	Function returns the best 4 products that combine with the given product_id from shopping cart 
-	'''
+	'''Function returns the best 4 products that combine with the given product_id from shopping cart'''
 	cartproducts = cartproducts.replace("'","")
 	cartproducts = cartproducts.replace(" ","")
 	cartproducts = cartproducts.strip("[]").split(",")
@@ -20,15 +17,13 @@ def product_combi(cartproducts, place, cur):
 		if productlist[0][5] >= 15:
 			prodids = productlist[0][1:5]
 			return prodids
-	except Exception as e:
+	except IndexError as e:
 		print(e, file=sys.stderr)
 		return None
 
 def product_combi_engine(cartproducts, lengthcart, place, cur):
-	'''
-	This function makes use of the function "product_combi" so that if there isn't a recommendation found for the last product,
-	it tries to find a recommendation for the next product after it in the shoppingcart
-	'''
+	'''This function makes use of the function "product_combi" so that if there isn't a recommendation found for the last product,
+	it tries to find a recommendation for the next product after it in the shoppingcart'''
 	if product_combi(cartproducts, -1, cur) != None:
 		return product_combi(cartproducts, -1, cur)
 	elif lengthcart >= 2:
