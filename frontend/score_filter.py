@@ -105,20 +105,29 @@ def popularity_score():
     viewweight = 0.01
     buyweight = 0.1
 
+    #here we assign score based on amount of views a product gets
     for i in viewcounter:
-        popularity_score_dict[i[0]] = 0.01
-        popularity_score_dict[i[0]] += viewweight * i[1]
+        popularity_score_dict[i[0]] = 0.01 #create the entry
+        #cap view points at 1400 to remove bias towards top ~130 products
+        if i[1] > 1500:
+            popularity_score_dict[i[0]] += viewweight * 1400 #append capped score
+        else:
+            popularity_score_dict[i[0]] += viewweight * i[1] #append score
     for k in buycounter:
+        #check if the product is already in the dict, if so, just append score
         if k[0] in popularity_score_dict.keys():
             #cap buys at 500 to remove bias towards top ~130 products
             if k[1] > 500:
-                popularity_score_dict[k[0]] += buyweight * 500
+                popularity_score_dict[k[0]] += buyweight * 500 #append capped score
             else:
-                popularity_score_dict[k[0]] += buyweight * k[1]
+                popularity_score_dict[k[0]] += buyweight * k[1] #append uncapped score
+        #if product not in dict, create the entry
         else:
             popularity_score_dict[k[0]] = 0.01
-            popularity_score_dict[k[0]] += buyweight*k[1]
-
+            if k[1] > 500:
+                popularity_score_dict[k[0]] += buyweight * 500 #append capped score
+            else:
+                popularity_score_dict[k[0]] += buyweight * k[1] #append uncapped score
     return popularity_score_dict
 
 def score_combiner(product_id, popdict):
@@ -144,6 +153,7 @@ def score_combiner(product_id, popdict):
     #slice the dict with itertools to only get the top 4 results
     results = dict(itertools.islice(sorted_combine_dict.items(), 4))
     return results
+
 def score_table_maker():
     '''this function creates the table score_recommendation, which has a productid as primary key
     and 4 productids as attributes. It also creates a foreign key constraint for our MAIN productid'''
