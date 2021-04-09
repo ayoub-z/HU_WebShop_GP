@@ -3,8 +3,9 @@ Levi Verhoef, Ayoub Zouin, Dennis Besselsen
 
 This is our recommendation engine project.
 
-Right now, we have a simple algorithm implemented. To be able to view this, you will need to have the database setup as supplied by the HU.
-Then in order to run this, make sure you open popu_prod and change the database variables, and let it fill the table populairste_prod.
+We have implemented a few algorithms to make recommendations. To be able to view this, you will need to have the database setup as supplied by the HU.
+Then in order to run this, make sure you open database_setup/db_connection.py and change the database variables.
+There's 2 database tables that need to be filled beforehand. To do this, run score_based_recommendation_table_setup and product_combi_filler.
 Now, run huw.sh and huw_recommend.sh, and navigate to 127.0.0.1:5000.
 There you will see the frontend, and you can check the recommendations.
 Right now, our simple algorithm is only applied on the "product overview (/producten/)" page.
