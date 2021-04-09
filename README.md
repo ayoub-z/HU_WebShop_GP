@@ -8,4 +8,9 @@ Then in order to run this, make sure you open database_setup/db_connection.py an
 There's 2 database tables that need to be filled beforehand. To do this, run score_based_recommendation_table_setup and product_combi_filler.
 Now, run huw.sh and huw_recommend.sh, and navigate to 127.0.0.1:5000.
 There you will see the frontend, and you can check the recommendations.
-Right now, our simple algorithm is only applied on the "product overview (/producten/)" page.
+
+Currently we're implementing 3 different recommendations and 1 default recommendation on the webpage: 
+1. On the homepage you will find the default recommendation ("**Simple algorithm**").
+2. On the category page we have implemented the **Category based popularity recommendation** recommendation.
+3. On the product page we have implemented the **Score-based filter vergelijkbare producten** recommendation.
+4. Finally, on the shopping cart page we have implemented the **Product Combination** recommendation.
