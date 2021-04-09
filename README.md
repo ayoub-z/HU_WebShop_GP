@@ -9,7 +9,7 @@ There's 2 database tables that need to be filled beforehand. To do this, run sco
 Now, run huw.sh and huw_recommend.sh, and navigate to 127.0.0.1:5000.
 There you will see the frontend, and you can check the recommendations.
 
-Currently we're implementing 3 different recommendations and 1 default recommendation on the webpage: 
+Currently we're implementing 3 different recommendations and 1 default recommendation on the webpages: 
 1. On the homepage you will find the default recommendation ("**Simple algorithm**").
 2. On the category page we have implemented the **Category based popularity recommendation** recommendation.
 3. On the product page we have implemented the **Score-based filter vergelijkbare producten** recommendation.
